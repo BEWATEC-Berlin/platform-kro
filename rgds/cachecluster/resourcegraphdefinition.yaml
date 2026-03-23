@@ -1,0 +1,87 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: cacheclusters.platform.connectecare.io
+spec:
+  schema:
+    apiVersion: v1alpha1
+    group: platform.connectecare.io
+    kind: CacheCluster
+    spec:
+      name: string | required=true
+      namespace: string | required=true
+      image: string | default="valkey/valkey:8"
+      port: integer | default=6379
+      replicas: integer | default=1 | minimum=1 | maximum=1
+      storage:
+        size: string | default="1Gi"
+    status:
+      serviceName: ${service.metadata.name}
+      endpoint: ${service.metadata.name + "." + service.metadata.namespace + ".svc.cluster.local"}
+      port: ${schema.spec.port}
+  resources:
+    - id: headlessService
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${schema.spec.name}-headless
+          namespace: ${schema.spec.namespace}
+        spec:
+          clusterIP: None
+          selector:
+            app.kubernetes.io/name: ${schema.spec.name}
+          ports:
+            - name: cache
+              port: ${schema.spec.port}
+              targetPort: ${schema.spec.port}
+    - id: service
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+        spec:
+          selector:
+            app.kubernetes.io/name: ${schema.spec.name}
+          ports:
+            - name: cache
+              port: ${schema.spec.port}
+              targetPort: ${schema.spec.port}
+    - id: statefulSet
+      template:
+        apiVersion: apps/v1
+        kind: StatefulSet
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+        spec:
+          serviceName: ${headlessService.metadata.name}
+          replicas: ${schema.spec.replicas}
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: ${schema.spec.name}
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${schema.spec.name}
+            spec:
+              containers:
+                - name: cache
+                  image: ${schema.spec.image}
+                  ports:
+                    - containerPort: ${schema.spec.port}
+                      name: cache
+                  volumeMounts:
+                    - name: data
+                      mountPath: /data
+          volumeClaimTemplates:
+            - metadata:
+                name: data
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: ${schema.spec.storage.size}

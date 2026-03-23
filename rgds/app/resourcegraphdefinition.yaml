@@ -1,0 +1,246 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: apps.platform.connectecare.io
+spec:
+  schema:
+    apiVersion: v1alpha1
+    group: platform.connectecare.io
+    kind: App
+    spec:
+      name: string | required=true
+      namespace: string | required=true
+      image: string | required=true
+      port: integer | default=8080
+      replicas: integer | default=1 | minimum=1
+      dependencies:
+        database:
+          enabled: boolean | default=false
+          databaseClusterName: string
+        cache:
+          enabled: boolean | default=false
+          cacheClusterName: string
+      config:
+        data: "map[string]string"
+      autoscaling:
+        enabled: boolean | default=false
+        minReplicas: integer | default=1
+        maxReplicas: integer | default=3
+        targetCPUUtilizationPercentage: integer | default=80
+      route:
+        enabled: boolean | default=false
+        gatewayName: string
+        gatewayNamespace: string
+        hostnames: "[]string"
+        pathPrefix: string | default="/"
+      externalSecret:
+        enabled: boolean | default=false
+        secretStoreRefName: string
+        secretStoreKind: string | default="ClusterSecretStore"
+        targetSecretName: string
+        refreshInterval: string | default="1h"
+        extractKey: string
+      certificate:
+        enabled: boolean | default=false
+        issuerName: string
+        issuerKind: string | default="ClusterIssuer"
+        secretName: string
+        dnsNames: "[]string"
+    status:
+      serviceName: ${service.metadata.name}
+      availableReplicas: ${deployment.status.availableReplicas}
+      databaseClusterName: ${schema.spec.dependencies.database.databaseClusterName}
+      cacheClusterName: ${schema.spec.dependencies.cache.cacheClusterName}
+      databaseRWServiceName: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.rwServiceName : ''}"
+      cacheServiceName: "${schema.spec.dependencies.cache.enabled ? cacheCluster.status.serviceName : ''}"
+  resources:
+    - id: serviceAccount
+      template:
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+    - id: configMap
+      template:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+        data: ${schema.spec.config.data}
+    - id: databaseCluster
+      includeWhen:
+        - ${schema.spec.dependencies.database.enabled}
+      externalRef:
+        apiVersion: platform.connectecare.io/v1alpha1
+        kind: DatabaseCluster
+        metadata:
+          name: ${schema.spec.dependencies.database.databaseClusterName}
+          namespace: ${schema.spec.namespace}
+    - id: cacheCluster
+      includeWhen:
+        - ${schema.spec.dependencies.cache.enabled}
+      externalRef:
+        apiVersion: platform.connectecare.io/v1alpha1
+        kind: CacheCluster
+        metadata:
+          name: ${schema.spec.dependencies.cache.cacheClusterName}
+          namespace: ${schema.spec.namespace}
+    - id: deployment
+      template:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+        spec:
+          replicas: ${schema.spec.replicas}
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: ${schema.spec.name}
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${schema.spec.name}
+            spec:
+              serviceAccountName: ${serviceAccount.metadata.name}
+              containers:
+                - name: app
+                  image: ${schema.spec.image}
+                  ports:
+                    - containerPort: ${schema.spec.port}
+                      name: http
+                  envFrom:
+                    - configMapRef:
+                        name: ${configMap.metadata.name}
+                  env:
+                    - name: APP_DATABASE_CLUSTER
+                      value: ${schema.spec.dependencies.database.databaseClusterName}
+                    - name: APP_DATABASE_SERVICE_RW
+                      value: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.rwServiceName : ''}"
+                    - name: APP_DATABASE_SERVICE_RO
+                      value: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.roServiceName : ''}"
+                    - name: APP_DATABASE_NAME
+                      value: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.databaseName : ''}"
+                    - name: APP_DATABASE_SECRET_NAME
+                      value: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.appSecretName : ''}"
+                    - name: APP_DATABASE_USERNAME
+                      valueFrom:
+                        secretKeyRef:
+                          name: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.appSecretName : schema.spec.name + '-no-db'}"
+                          key: username
+                          optional: true
+                    - name: APP_DATABASE_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.appSecretName : schema.spec.name + '-no-db'}"
+                          key: password
+                          optional: true
+                    - name: APP_DATABASE_URI
+                      valueFrom:
+                        secretKeyRef:
+                          name: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.appSecretName : schema.spec.name + '-no-db'}"
+                          key: uri
+                          optional: true
+                    - name: APP_CACHE_CLUSTER
+                      value: ${schema.spec.dependencies.cache.cacheClusterName}
+                    - name: APP_CACHE_SERVICE
+                      value: "${schema.spec.dependencies.cache.enabled ? cacheCluster.status.serviceName : ''}"
+                    - name: APP_CACHE_ENDPOINT
+                      value: "${schema.spec.dependencies.cache.enabled ? cacheCluster.status.endpoint : ''}"
+                    - name: APP_CACHE_PORT
+                      value: "${schema.spec.dependencies.cache.enabled ? string(cacheCluster.status.port) : ''}"
+    - id: service
+      template:
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+        spec:
+          selector:
+            app.kubernetes.io/name: ${schema.spec.name}
+          ports:
+            - name: http
+              port: ${schema.spec.port}
+              targetPort: ${schema.spec.port}
+    - id: autoscaler
+      includeWhen:
+        - ${schema.spec.autoscaling.enabled}
+      template:
+        apiVersion: autoscaling/v2
+        kind: HorizontalPodAutoscaler
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+        spec:
+          scaleTargetRef:
+            apiVersion: apps/v1
+            kind: Deployment
+            name: ${deployment.metadata.name}
+          minReplicas: ${schema.spec.autoscaling.minReplicas}
+          maxReplicas: ${schema.spec.autoscaling.maxReplicas}
+          metrics:
+            - type: Resource
+              resource:
+                name: cpu
+                target:
+                  type: Utilization
+                  averageUtilization: ${schema.spec.autoscaling.targetCPUUtilizationPercentage}
+    - id: httpRoute
+      includeWhen:
+        - ${schema.spec.route.enabled}
+      template:
+        apiVersion: gateway.networking.k8s.io/v1
+        kind: HTTPRoute
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+        spec:
+          parentRefs:
+            - name: ${schema.spec.route.gatewayName}
+              namespace: ${schema.spec.route.gatewayNamespace}
+          hostnames: ${schema.spec.route.hostnames}
+          rules:
+            - matches:
+                - path:
+                    type: PathPrefix
+                    value: ${schema.spec.route.pathPrefix}
+              backendRefs:
+                - name: ${service.metadata.name}
+                  port: ${schema.spec.port}
+    - id: externalSecret
+      includeWhen:
+        - ${schema.spec.externalSecret.enabled}
+      template:
+        apiVersion: external-secrets.io/v1
+        kind: ExternalSecret
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+        spec:
+          refreshInterval: ${schema.spec.externalSecret.refreshInterval}
+          secretStoreRef:
+            name: ${schema.spec.externalSecret.secretStoreRefName}
+            kind: ${schema.spec.externalSecret.secretStoreKind}
+          target:
+            name: ${schema.spec.externalSecret.targetSecretName}
+          dataFrom:
+            - extract:
+                key: ${schema.spec.externalSecret.extractKey}
+    - id: certificate
+      includeWhen:
+        - ${schema.spec.certificate.enabled}
+      template:
+        apiVersion: cert-manager.io/v1
+        kind: Certificate
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+        spec:
+          secretName: ${schema.spec.certificate.secretName}
+          issuerRef:
+            name: ${schema.spec.certificate.issuerName}
+            kind: ${schema.spec.certificate.issuerKind}
+          dnsNames: ${schema.spec.certificate.dnsNames}

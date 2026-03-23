@@ -1,0 +1,43 @@
+apiVersion: platform.connectecare.io/v1alpha1
+kind: App
+metadata:
+  name: payment
+spec:
+  name: payment
+  namespace: platform-demo
+  image: ghcr.io/open-telemetry/demo:2.1.3-payment
+  port: 8080
+  replicas: 1
+  dependencies:
+    database:
+      enabled: true
+      databaseClusterName: payment-db
+    cache:
+      enabled: true
+      cacheClusterName: cart-cache
+  config:
+    data: {}
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+  route:
+    enabled: false
+    gatewayName: ""
+    gatewayNamespace: ""
+    hostnames: []
+    pathPrefix: /
+  externalSecret:
+    enabled: false
+    secretStoreRefName: ""
+    secretStoreKind: ClusterSecretStore
+    targetSecretName: ""
+    refreshInterval: 1h
+    extractKey: ""
+  certificate:
+    enabled: false
+    issuerName: ""
+    issuerKind: ClusterIssuer
+    secretName: ""
+    dnsNames: []

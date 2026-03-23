@@ -1,0 +1,39 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: databaseclusters.platform.connectecare.io
+spec:
+  schema:
+    apiVersion: v1alpha1
+    group: platform.connectecare.io
+    kind: DatabaseCluster
+    spec:
+      name: string | required=true
+      namespace: string | required=true
+      instances: integer | default=1 | minimum=1
+      storage:
+        size: string | default="5Gi"
+      database:
+        name: string | required=true
+        owner: string | required=true
+    status:
+      rwServiceName: ${schema.spec.name + "-rw"}
+      roServiceName: ${schema.spec.name + "-ro"}
+      appSecretName: ${schema.spec.name + "-app"}
+      databaseName: ${schema.spec.database.name}
+  resources:
+    - id: cluster
+      template:
+        apiVersion: postgresql.cnpg.io/v1
+        kind: Cluster
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+        spec:
+          instances: ${schema.spec.instances}
+          bootstrap:
+            initdb:
+              database: ${schema.spec.database.name}
+              owner: ${schema.spec.database.owner}
+          storage:
+            size: ${schema.spec.storage.size}
