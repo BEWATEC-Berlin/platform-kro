@@ -10,7 +10,7 @@ spec:
     spec:
       name: string | required=true
       namespace: string | required=true
-      instances: integer | default=1 | minimum=1
+      instances: integer | default=1
       storage:
         size: string | default="5Gi"
       database:

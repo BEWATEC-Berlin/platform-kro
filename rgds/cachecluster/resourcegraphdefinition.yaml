@@ -12,7 +12,7 @@ spec:
       namespace: string | required=true
       image: string | default="valkey/valkey:8"
       port: integer | default=6379
-      replicas: integer | default=1 | minimum=1 | maximum=1
+      replicas: integer | default=1
       storage:
         size: string | default="1Gi"
     status:
