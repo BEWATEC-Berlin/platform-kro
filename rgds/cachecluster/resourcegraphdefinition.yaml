@@ -18,7 +18,7 @@ spec:
     status:
       serviceName: ${service.metadata.name}
       endpoint: ${service.metadata.name + "." + service.metadata.namespace + ".svc.cluster.local"}
-      port: ${schema.spec.port}
+      port: ${service.spec.ports[0].port}
   resources:
     - id: headlessService
       template:
