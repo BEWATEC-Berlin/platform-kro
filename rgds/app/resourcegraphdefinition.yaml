@@ -49,10 +49,6 @@ spec:
     status:
       serviceName: ${service.metadata.name}
       availableReplicas: ${deployment.status.availableReplicas}
-      databaseClusterName: ${schema.spec.dependencies.database.databaseClusterName}
-      cacheClusterName: ${schema.spec.dependencies.cache.cacheClusterName}
-      databaseRWServiceName: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.rwServiceName : ''}"
-      cacheServiceName: "${schema.spec.dependencies.cache.enabled ? cacheCluster.status.serviceName : ''}"
   resources:
     - id: serviceAccount
       template:

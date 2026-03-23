@@ -17,10 +17,10 @@ spec:
         name: string | required=true
         owner: string | required=true
     status:
-      rwServiceName: ${schema.spec.name + "-rw"}
-      roServiceName: ${schema.spec.name + "-ro"}
-      appSecretName: ${schema.spec.name + "-app"}
-      databaseName: ${schema.spec.database.name}
+      rwServiceName: ${cluster.metadata.name + "-rw"}
+      roServiceName: ${cluster.metadata.name + "-ro"}
+      appSecretName: ${cluster.metadata.name + "-app"}
+      databaseName: ${cluster.spec.bootstrap.initdb.database}
   resources:
     - id: cluster
       template:
