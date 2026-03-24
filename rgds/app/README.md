@@ -37,7 +37,6 @@ It still carries older top-level fields and additive transitional blocks such as
 
 - `runtime`
 - `service`
-- `availability`
 
 That transitional shape is acceptable while the target contract is being
 stabilized, but new design work should be evaluated against the normalized
@@ -125,9 +124,6 @@ When enabled, `App` binds to:
 - `DatabaseCluster` for service names and secret names
 - `CacheCluster` for service and endpoint projection
 
-The deployment receives standardized environment variables for:
-
-- database cluster and service names
-- database name and secret name
-- database username, password, and URI from the referenced secret
-- cache cluster, service, endpoint, and port
+The current deployment wiring references backing services through `externalRef`, but
+automatic database/cache environment-variable injection is deferred until it can
+be implemented without breaking deployment materialization in KRO.

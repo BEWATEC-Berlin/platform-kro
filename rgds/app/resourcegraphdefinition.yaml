@@ -117,7 +117,7 @@ spec:
             app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
             app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
             app.kubernetes.io/managed-by: kro
-        data: ${schema.spec.config.data}
+        data: ${schema.spec.?config.?data.orValue({})}
     - id: databaseCluster
       includeWhen:
         - ${schema.spec.dependencies.database.enabled}
@@ -181,43 +181,6 @@ spec:
                   envFrom:
                     - configMapRef:
                         name: ${configMap.metadata.name}
-                  env:
-                    - name: APP_DATABASE_CLUSTER
-                      value: ${schema.spec.dependencies.database.databaseClusterName}
-                    - name: APP_DATABASE_SERVICE_RW
-                      value: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.rwServiceName : ''}"
-                    - name: APP_DATABASE_SERVICE_RO
-                      value: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.roServiceName : ''}"
-                    - name: APP_DATABASE_NAME
-                      value: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.databaseName : ''}"
-                    - name: APP_DATABASE_SECRET_NAME
-                      value: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.appSecretName : ''}"
-                    - name: APP_DATABASE_USERNAME
-                      valueFrom:
-                        secretKeyRef:
-                          name: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.appSecretName : schema.spec.name + '-no-db'}"
-                          key: username
-                          optional: true
-                    - name: APP_DATABASE_PASSWORD
-                      valueFrom:
-                        secretKeyRef:
-                          name: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.appSecretName : schema.spec.name + '-no-db'}"
-                          key: password
-                          optional: true
-                    - name: APP_DATABASE_URI
-                      valueFrom:
-                        secretKeyRef:
-                          name: "${schema.spec.dependencies.database.enabled ? databaseCluster.status.appSecretName : schema.spec.name + '-no-db'}"
-                          key: uri
-                          optional: true
-                    - name: APP_CACHE_CLUSTER
-                      value: ${schema.spec.dependencies.cache.cacheClusterName}
-                    - name: APP_CACHE_SERVICE
-                      value: "${schema.spec.dependencies.cache.enabled ? cacheCluster.status.serviceName : ''}"
-                    - name: APP_CACHE_ENDPOINT
-                      value: "${schema.spec.dependencies.cache.enabled ? cacheCluster.status.endpoint : ''}"
-                    - name: APP_CACHE_PORT
-                      value: "${schema.spec.dependencies.cache.enabled ? string(cacheCluster.status.port) : ''}"
                   resources:
                     requests:
                       cpu: ${schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m")}

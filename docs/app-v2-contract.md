@@ -288,10 +288,13 @@ which KRO rejected for `Deployment` probe fields during `ResourceGraphDefinition
 validation.
 
 Explicit `env` and `envFrom` projection is still intentionally deferred. The
-current `App` contract already injects baseline dependency environment variables
-and a generated config-map `envFrom` entry. Adding user-owned lists safely would
-require verified list-merge behavior in KRO rather than an unproven CEL concat
-pattern.
+current `App` contract emits a generated config-map `envFrom` entry, and
+`config.data` now defaults to an empty map so `App` can still materialize when
+no config literals are supplied. Automatic database/cache environment-variable
+injection is deferred because the first cross-resource interpolation pattern did
+not produce a reliable `Deployment` in live KRO verification. Adding user-owned
+lists safely still requires verified list-merge behavior in KRO rather than an
+unproven CEL concat pattern.
 
 ### Deliberately Deferred Again
 
