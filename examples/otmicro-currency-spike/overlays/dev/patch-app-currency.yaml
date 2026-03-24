@@ -1,0 +1,11 @@
+apiVersion: platform.connectedcare.io/v1alpha1
+kind: App
+metadata:
+  name: currency
+spec:
+  config:
+    revision: dev-2026-03-24-1
+    data:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability.svc.cluster.local:4317
+      VERSION: "2.1.4-dev"
+      OTEL_RESOURCE_ATTRIBUTES: service.name=currency,service.namespace=platform-kro-currency,service.version=2.1.4-dev

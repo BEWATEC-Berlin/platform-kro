@@ -28,3 +28,26 @@ existing generated `ConfigMap` plus `envFrom` wiring.
 
 That is acceptable for this spike because the workload is simple and does not
 need secrets or dynamic field references to start.
+
+## Overlay Pattern
+
+`spec.config.data` is easy to override in normal Kustomize overlays because it is
+just ordinary YAML on the `App` resource.
+
+This example includes a reusable base in [base/kustomization.yaml](/Users/francesco/repos/bewatec/platform-kro/examples/otmicro-currency-spike/base/kustomization.yaml#L1)
+and an overlay in [overlays/dev/kustomization.yaml](/Users/francesco/repos/bewatec/platform-kro/examples/otmicro-currency-spike/overlays/dev/kustomization.yaml#L1)
+with a patch in [overlays/dev/patch-app-currency.yaml](/Users/francesco/repos/bewatec/platform-kro/examples/otmicro-currency-spike/overlays/dev/patch-app-currency.yaml#L1).
+
+That overlay does two things:
+
+- patches `spec.config.data` with environment-specific values
+- bumps `spec.config.revision` to force a rollout when those config changes must
+  restart pods
+
+Render commands:
+
+```bash
+kubectl kustomize examples/otmicro-currency-spike
+kubectl kustomize examples/otmicro-currency-spike/base
+kubectl kustomize examples/otmicro-currency-spike/overlays/dev
+```

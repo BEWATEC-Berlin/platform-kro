@@ -133,3 +133,11 @@ be implemented without breaking deployment materialization in KRO.
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can
 force a rollout by patching one short field without depending on Kustomize
 `configMapGenerator` name hashing.
+
+The intended pattern is:
+
+- patch `spec.config.data` in overlays for environment-specific values
+- patch `spec.config.revision` when that config change must force a rollout
+
+A concrete example is included under
+`examples/otmicro-currency-spike/overlays/dev`.

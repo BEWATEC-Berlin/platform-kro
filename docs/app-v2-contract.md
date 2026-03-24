@@ -293,7 +293,9 @@ current `App` contract emits a generated config-map `envFrom` entry, and
 no config literals are supplied. `config.revision` is also available as an
 explicit rollout token and is stamped onto the pod template so overlays can
 trigger deployment rollout without depending on generated config-map name
-changes. Automatic database/cache environment-variable injection is deferred
+changes. The intended Kustomize pattern is to patch `config.data` normally in
+overlays and patch `config.revision` only when the config change must force a
+rollout. Automatic database/cache environment-variable injection is deferred
 because the first cross-resource interpolation pattern did not produce a
 reliable `Deployment` in live KRO verification. Adding user-owned lists safely
 still requires verified list-merge behavior in KRO rather than an unproven CEL
