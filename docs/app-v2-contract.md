@@ -189,7 +189,6 @@ This bucket owns application configuration and dependency binding.
 Candidate contents:
 
 - config map style data
-- explicit env and envFrom projections
 - secret projections
 - external secret references
 - dependency references to `DatabaseCluster` and `CacheCluster`
@@ -287,25 +286,25 @@ static validation. The attempted expression produced a `map` or `null` branch,
 which KRO rejected for `Deployment` probe fields during `ResourceGraphDefinition`
 validation.
 
-Explicit `env` and `envFrom` projection is still intentionally deferred. The
-current `App` contract emits a generated config-map `envFrom` entry, and
-`config.data` now defaults to an empty map so `App` can still materialize when
-no config literals are supplied. `config.revision` is also available as an
-explicit rollout token and is stamped onto the pod template so overlays can
-trigger deployment rollout without depending on generated config-map name
-changes. The intended Kustomize pattern is to patch `config.data` normally in
-overlays and patch `config.revision` only when the config change must force a
-rollout. Automatic database/cache environment-variable injection is deferred
-because the first cross-resource interpolation pattern did not produce a
-reliable `Deployment` in live KRO verification. Adding user-owned lists safely
-still requires verified list-merge behavior in KRO rather than an unproven CEL
-concat pattern.
+Explicit `env` and `envFrom` projection is now implemented. The current `App`
+contract emits a generated config-map `envFrom` entry, supports additive
+`config.envFrom` sources, and allows `config.env` entries with literal `value`,
+`valueFrom.fieldRef`, `valueFrom.secretKeyRef`, and
+`valueFrom.configMapKeyRef`. `config.data` still defaults to an empty map so
+`App` can materialize when no config literals are supplied. `config.revision`
+is available as an explicit rollout token and is stamped onto the pod template
+so overlays can trigger deployment rollout without depending on generated
+config-map name changes. The intended Kustomize pattern is to patch
+`config.data` normally in overlays and patch `config.revision` only when the
+config change must force a rollout. Automatic database/cache environment-
+variable injection remains deferred because the first cross-resource
+interpolation pattern did not produce a reliable `Deployment` in live KRO
+verification.
 
 ### Deliberately Deferred Again
 
 These fields are still deferred to a later transitional round:
 
-- explicit `env` and `envFrom` projection blocks
 - executable probe support in the RGD
 - executable `PodDisruptionBudget` support in the RGD
 - observability CRDs such as `ServiceMonitor`
@@ -337,6 +336,8 @@ mapping.
 | `runtime.nodeSelector` | `workload` | `workload.nodeSelector` |
 | `autoscaling` | `workload` | `workload.autoscaling` |
 | `config.data` | `config` | `config.data` |
+| `config.env` | `config` | `config.env` |
+| `config.envFrom` | `config` | `config.envFrom` |
 | `config.revision` | `config` | `config.revision` |
 | `dependencies` | `config` | `config.dependencies` |
 | `externalSecret` | `config` | `config.externalSecrets` or `config.externalSecret` |
@@ -358,8 +359,7 @@ The next `App` work should follow this order:
 3. only perform a breaking schema move to the normalized shape once the field
    set is stable enough to justify it
 
-The next likely transitional round after this one should focus on explicit
-environment projection first, then cluster-validated designs for probes and
+The next likely transitional round after this one should focus on cluster-validated designs for probes and
 disruption budgets.
 
 ## Mapping To The `cc-*` Repos

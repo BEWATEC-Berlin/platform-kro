@@ -16,6 +16,34 @@ spec:
       ResourceRequirements:
         requests: ResourceValues
         limits: ResourceValues
+      ObjectFieldSelector:
+        apiVersion: string
+        fieldPath: string | required=true
+      SecretKeySelector:
+        name: string | required=true
+        key: string | required=true
+        optional: boolean
+      ConfigMapKeySelector:
+        name: string | required=true
+        key: string | required=true
+        optional: boolean
+      EnvVarSource:
+        fieldRef: ObjectFieldSelector
+        secretKeyRef: SecretKeySelector
+        configMapKeyRef: ConfigMapKeySelector
+      EnvVar:
+        name: string | required=true
+        value: string
+        valueFrom: EnvVarSource
+      ConfigMapEnvSource:
+        name: string | required=true
+        optional: boolean
+      SecretEnvSource:
+        name: string | required=true
+        optional: boolean
+      EnvFromSource:
+        configMapRef: ConfigMapEnvSource
+        secretRef: SecretEnvSource
       RuntimeConfig:
         imagePullSecrets: "[]LocalObjectReference"
         imagePullPolicy: string | default="IfNotPresent"
@@ -46,6 +74,8 @@ spec:
       config:
         revision: string
         data: "map[string]string"
+        env: "[]EnvVar"
+        envFrom: "[]EnvFromSource"
       runtime: RuntimeConfig
       service: ServiceConfig
       autoscaling:
@@ -180,9 +210,12 @@ spec:
                   ports:
                     - containerPort: ${schema.spec.port}
                       name: http
-                  envFrom:
-                    - configMapRef:
-                        name: ${configMap.metadata.name}
+                  env: ${schema.spec.?config.?env.orValue([])}
+                  envFrom: >-
+                    ${
+                      [{"configMapRef": {"name": configMap.metadata.name}}] +
+                      schema.spec.?config.?envFrom.orValue([])
+                    }
                   resources:
                     requests:
                       cpu: ${schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m")}

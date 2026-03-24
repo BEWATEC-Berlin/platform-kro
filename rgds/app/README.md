@@ -101,7 +101,8 @@ Planned next responsibilities should be reasoned about in these buckets:
 - `workload`: richer runtime controls, scaling, resilience, and
   cluster-validated models for probes and disruption budgets
 - `config`: config and secret projection patterns used repeatedly across app
-  repos, including a later explicit env/envFrom model
+  repos, including explicit env/envFrom projection and later secret/config
+  composition refinements
 - `network`: service exposure and `HTTPRoute` wiring
 - `storage`: only where the workload still fits a deployment-shaped app
 
@@ -128,6 +129,11 @@ When enabled, `App` binds to:
 The current deployment wiring references backing services through `externalRef`, but
 automatic database/cache environment-variable injection is deferred until it can
 be implemented without breaking deployment materialization in KRO.
+
+Explicit container environment projection is available through:
+
+- `config.env` for literal `value` and `valueFrom` entries
+- `config.envFrom` for additional `configMapRef` and `secretRef` sources
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can

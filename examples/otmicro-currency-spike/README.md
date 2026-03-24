@@ -22,12 +22,13 @@ remaining gaps without forcing the contract to over-claim.
 The source deployment uses explicit env entries, including a `fieldRef` for
 `OTEL_SERVICE_NAME`.
 
-The current `App` API does not yet support explicit env projection, so this
-example flattens the static env set into `config.data` and relies on the
-existing generated `ConfigMap` plus `envFrom` wiring.
+The current `App` API now supports explicit `config.env`, so this example
+models the source deployment environment more directly. The `OTEL_SERVICE_NAME`
+field-ref is represented through `valueFrom.fieldRef`, while the remaining
+static values stay as explicit literal env entries.
 
-That is acceptable for this spike because the workload is simple and does not
-need secrets or dynamic field references to start.
+The generated `ConfigMap` path is still available through `config.data`, but it
+is no longer required just to express normal container environment variables.
 
 ## Overlay Pattern
 
