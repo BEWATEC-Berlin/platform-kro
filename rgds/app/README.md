@@ -140,6 +140,10 @@ The current `config.envFrom` shape intentionally supports name-based refs only.
 Kubernetes `prefix` support is still deferred until KRO can express the merged
 list without invalidating the resource graph.
 
+`config.env[].valueFrom.resourceFieldRef` is supported without `divisor`. The
+live KRO validation path in this cluster rejected `divisor` as not structurally
+compatible with the expected Deployment env schema.
+
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can
 force a rollout by patching one short field without depending on Kustomize

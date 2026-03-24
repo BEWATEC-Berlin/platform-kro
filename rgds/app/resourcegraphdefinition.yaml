@@ -21,7 +21,6 @@ spec:
         fieldPath: string | required=true
       ResourceFieldSelector:
         containerName: string
-        divisor: string
         resource: string | required=true
       SecretKeySelector:
         name: string | required=true
