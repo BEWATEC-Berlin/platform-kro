@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: restricted-nginx-extra
+  namespace: platform-kro-restricted
+data:
+  EXTRA_CONFIG_VALUE: from-extra-configmap

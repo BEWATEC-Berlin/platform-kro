@@ -107,6 +107,8 @@ spec:
         revision: string
         data: "map[string]string"
         env: "[]EnvVar"
+        envFromConfigMaps: "[]LocalObjectReference"
+        envFromSecrets: "[]LocalObjectReference"
       runtime: RuntimeConfig
       service: ServiceConfig
       serviceMonitor: ServiceMonitorConfig
@@ -262,9 +264,12 @@ spec:
                     - containerPort: ${schema.spec.port}
                       name: http
                   env: ${schema.spec.?config.?env.orValue([])}
-                  envFrom:
-                    - configMapRef:
-                        name: ${configMap.metadata.name}
+                  envFrom: >-
+                    ${
+                      [{"configMapRef": {"name": configMap.metadata.name}}]
+                      + schema.spec.?config.?envFromConfigMaps.orValue([]).map(cm, {"configMapRef": {"name": cm.name}})
+                      + schema.spec.?config.?envFromSecrets.orValue([]).map(secretRef, {"secretRef": {"name": secretRef.name}})
+                    }
                   readinessProbe: >-
                     ${
                       schema.spec.?runtime.?readinessProbe.?enabled.orValue(false)

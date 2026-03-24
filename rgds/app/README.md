@@ -143,6 +143,8 @@ Explicit container environment projection is available through:
 
 - `config.env` for literal `value` and `valueFrom` entries, including
   `fieldRef`, `resourceFieldRef`, `secretKeyRef`, and `configMapKeyRef`
+- `config.envFromConfigMaps` for explicit referenced config maps
+- `config.envFromSecrets` for explicit referenced secrets
 
 `config.env[].valueFrom.resourceFieldRef` is supported without `divisor`. The
 live KRO validation path in this cluster rejected `divisor` as not structurally
@@ -199,10 +201,18 @@ the pod template as `platform.connectedcare.io/config-revision`, so overlays can
 force a rollout by patching one short field without depending on Kustomize
 `configMapGenerator` name hashing.
 
-Additive `config.envFrom` support is still deferred. A live KRO validation pass
-on 2026-03-24 rejected the merged `EnvFromSource` shape needed to combine user
-refs with the generated config-map `envFrom` entry while keeping the resource
-graph active.
+Generic additive `config.envFrom` support is still deferred. A live KRO
+validation pass on 2026-03-24 rejected the merged generic `EnvFromSource`
+shape needed to combine user refs with the generated config-map `envFrom`
+entry while keeping the resource graph active.
+
+The supported normalization path is narrower:
+
+- `config.envFromConfigMaps` appends explicit config-map refs
+- `config.envFromSecrets` appends explicit secret refs
+
+That keeps the contract additive and avoids the unsupported generic `prefix`
+and union typing path.
 
 The intended pattern is:
 

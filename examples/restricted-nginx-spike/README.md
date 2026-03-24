@@ -13,6 +13,7 @@ Kyverno policy.
 - generated HTTP readiness and liveness probes against the named `http` port
 - generated `PodDisruptionBudget` for the `App` pods
 - generated `ServiceMonitor` for the same service labels and `http` port
+- merged env-from projection from the generated app config map, one referenced config map, and one referenced secret
 - deployment availability in the development cluster without a policy exception
 
 ## Render Command

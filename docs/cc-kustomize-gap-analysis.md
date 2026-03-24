@@ -92,7 +92,7 @@ outside the executable platform API:
 - richer pod placement controls such as full affinity policies beyond the current validated spread preset
 - broader observability bindings beyond the current `ServiceMonitor` path
 - optional PVC attachments for deployment-shaped workloads
-- broader secret and config composition beyond the current `config.data`, generated config-map `envFrom`, and explicit `config.env` model
+- broader secret and config composition beyond the current `config.data`, explicit `config.env`, and explicit config-map/secret `envFrom` refs
 
 Without those features, most HTTP services still need large raw deployment
 manifests beside the platform API.
