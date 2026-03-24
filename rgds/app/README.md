@@ -132,8 +132,13 @@ be implemented without breaking deployment materialization in KRO.
 
 Explicit container environment projection is available through:
 
-- `config.env` for literal `value` and `valueFrom` entries
-- `config.envFrom` for additional `configMapRef` and `secretRef` sources
+- `config.env` for literal `value` and `valueFrom` entries, including
+  `fieldRef`, `resourceFieldRef`, `secretKeyRef`, and `configMapKeyRef`
+- `config.envFrom` for additional name-based `configMapRef` and `secretRef` sources
+
+The current `config.envFrom` shape intentionally supports name-based refs only.
+Kubernetes `prefix` support is still deferred until KRO can express the merged
+list without invalidating the resource graph.
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can

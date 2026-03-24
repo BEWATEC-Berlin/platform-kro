@@ -19,6 +19,10 @@ spec:
       ObjectFieldSelector:
         apiVersion: string
         fieldPath: string | required=true
+      ResourceFieldSelector:
+        containerName: string
+        divisor: string
+        resource: string | required=true
       SecretKeySelector:
         name: string | required=true
         key: string | required=true
@@ -29,21 +33,13 @@ spec:
         optional: boolean
       EnvVarSource:
         fieldRef: ObjectFieldSelector
+        resourceFieldRef: ResourceFieldSelector
         secretKeyRef: SecretKeySelector
         configMapKeyRef: ConfigMapKeySelector
       EnvVar:
         name: string | required=true
         value: string
         valueFrom: EnvVarSource
-      ConfigMapEnvSource:
-        name: string | required=true
-        optional: boolean
-      SecretEnvSource:
-        name: string | required=true
-        optional: boolean
-      EnvFromSource:
-        configMapRef: ConfigMapEnvSource
-        secretRef: SecretEnvSource
       RuntimeConfig:
         imagePullSecrets: "[]LocalObjectReference"
         imagePullPolicy: string | default="IfNotPresent"
@@ -75,7 +71,7 @@ spec:
         revision: string
         data: "map[string]string"
         env: "[]EnvVar"
-        envFrom: "[]EnvFromSource"
+        envFrom: "[]map[string]map[string]string"
       runtime: RuntimeConfig
       service: ServiceConfig
       autoscaling:

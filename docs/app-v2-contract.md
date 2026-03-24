@@ -287,9 +287,9 @@ which KRO rejected for `Deployment` probe fields during `ResourceGraphDefinition
 validation.
 
 Explicit `env` and `envFrom` projection is now implemented. The current `App`
-contract emits a generated config-map `envFrom` entry, supports additive
+contract emits a generated config-map `envFrom` entry, supports additive name-based
 `config.envFrom` sources, and allows `config.env` entries with literal `value`,
-`valueFrom.fieldRef`, `valueFrom.secretKeyRef`, and
+`valueFrom.fieldRef`, `valueFrom.resourceFieldRef`, `valueFrom.secretKeyRef`, and
 `valueFrom.configMapKeyRef`. `config.data` still defaults to an empty map so
 `App` can materialize when no config literals are supplied. `config.revision`
 is available as an explicit rollout token and is stamped onto the pod template
