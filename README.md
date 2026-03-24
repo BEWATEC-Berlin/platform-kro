@@ -43,6 +43,34 @@ Key repo-level documents:
 - `docs/cc-kustomize-gap-analysis.md`: gap analysis against the current
   `cc-*` kustomize repos
 
+## User-Facing Docs
+
+Start here when evaluating or consuming the platform APIs:
+
+- `rgds/app/README.md`: user-facing `App` API guide
+- `rgds/databasecluster/README.md`: user-facing `DatabaseCluster` API guide
+- `rgds/cachecluster/README.md`: user-facing `CacheCluster` API guide
+- `docs/app-v2-contract.md`: target `App` contract and validated limitations
+- `docs/cc-kustomize-gap-analysis.md`: migration-gap view against the current
+  `cc-*` estate
+- `examples/otmicro-currency-spike/README.md`: concrete migration spike and
+  overlay pattern
+
+## Change Process
+
+This repo is a user-facing platform API repository, not just an internal YAML
+scratchpad.
+
+Every meaningful API change should land with:
+
+- the executable RGD update
+- user-facing README updates for the affected API
+- contract and gap-analysis updates in `docs/`
+- an example or migration spike update when the change affects real usage
+- live verification through the Flux consumer path in `hetzner_playground`
+- an explicit note when a capability was attempted but deferred because KRO or
+  cluster validation rejected it
+
 ## Current State
 
 This repo is still an initial scaffold.

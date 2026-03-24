@@ -89,11 +89,10 @@ already present across the consumer repos:
 
 - resource requests and limits
 - liveness and readiness probes
-- pod and container security contexts
 - image pull secrets
 - labels and annotations beyond the minimal first pass
 - config and secret projection variants
-- pod placement controls such as affinity and topology spread constraints
+- richer pod placement controls such as full affinity policies beyond the current validated spread preset
 - optional disruption budgets
 - optional observability bindings
 - optional PVC attachments for deployment-shaped workloads
@@ -231,9 +230,8 @@ Expand `App` to cover the common HTTP workload contract:
 - richer container spec
 - probes
 - resources
-- security context
 - image pull secrets
-- pod placement controls
+- richer pod placement controls
 - env and secret projection
 - optional `PodDisruptionBudget`
 - optional monitoring attachment

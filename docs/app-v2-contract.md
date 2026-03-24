@@ -175,9 +175,10 @@ Candidate contents:
 - deployment and pod annotations
 - service account selection
 - node selector
-- affinity
+- priority class and tolerations
 - topology spread constraints
 - pod and container security context
+- richer affinity controls
 - probes
 - autoscaling
 - disruption budget
@@ -257,6 +258,11 @@ The current transitional RGD already implements:
 
 - `runtime.imagePullSecrets`
 - `runtime.nodeSelector`
+- `runtime.priorityClassName`
+- `runtime.tolerations`
+- `runtime.podSecurityContext`
+- `runtime.containerSecurityContext`
+- `runtime.topologySpread`
 - `runtime.resources`
 - `service.type`
 
@@ -310,6 +316,7 @@ the expected Deployment schema. That capability remains deferred.
 These fields are still deferred to a later transitional round:
 
 - executable probe support in the RGD
+- richer affinity controls beyond the current validated topology-spread preset
 - executable `PodDisruptionBudget` support in the RGD
 - observability CRDs such as `ServiceMonitor`
 - deployment-shaped persistence
@@ -338,6 +345,11 @@ mapping.
 | `runtime.deploymentAnnotations` | `workload` | `workload.deploymentAnnotations` |
 | `runtime.podAnnotations` | `workload` | `workload.podAnnotations` |
 | `runtime.nodeSelector` | `workload` | `workload.nodeSelector` |
+| `runtime.priorityClassName` | `workload` | `workload.priorityClassName` |
+| `runtime.tolerations` | `workload` | `workload.tolerations` |
+| `runtime.podSecurityContext` | `workload` | `workload.podSecurityContext` |
+| `runtime.containerSecurityContext` | `workload` | `workload.containerSecurityContext` |
+| `runtime.topologySpread` | `workload` | `workload.topologySpread` |
 | `autoscaling` | `workload` | `workload.autoscaling` |
 | `config.data` | `config` | `config.data` |
 | `config.env` | `config` | `config.env` |
@@ -362,7 +374,7 @@ The next `App` work should follow this order:
 3. only perform a breaking schema move to the normalized shape once the field
    set is stable enough to justify it
 
-The next likely transitional round after this one should focus on cluster-validated designs for probes and
+The next likely transitional round after this one should focus on cluster-validated designs for probes, richer affinity controls, and
 disruption budgets.
 
 ## Mapping To The `cc-*` Repos

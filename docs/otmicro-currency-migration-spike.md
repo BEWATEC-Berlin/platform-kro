@@ -62,7 +62,6 @@ The following source details are not modeled exactly in the current spike:
 
 - `opentelemetry.io/name` label
 - `revisionHistoryLimit`
-- container `securityContext`
 - `fieldRef`-based `OTEL_SERVICE_NAME`
 
 The `fieldRef` case is now modeled directly through `config.env[].valueFrom.fieldRef`.
@@ -119,7 +118,6 @@ end.
 
 This spike now confirms that the next meaningful `App` gaps are:
 
-- container `securityContext`
 - richer probe support for non-HTTP workloads such as gRPC health
 - multi-container and init-container support
 

@@ -39,6 +39,35 @@ spec:
         name: string | required=true
         value: string
         valueFrom: EnvVarSource
+      SeccompProfile:
+        type: string | required=true
+      Capabilities:
+        drop: "[]string"
+      PodSecurityContext:
+        runAsNonRoot: boolean
+        runAsUser: integer
+        runAsGroup: integer
+        fsGroup: integer
+        seccompProfile: SeccompProfile
+      ContainerSecurityContext:
+        allowPrivilegeEscalation: boolean
+        readOnlyRootFilesystem: boolean
+        runAsNonRoot: boolean
+        runAsUser: integer
+        runAsGroup: integer
+        capabilities: Capabilities
+        seccompProfile: SeccompProfile
+      Toleration:
+        key: string
+        operator: string
+        value: string
+        effect: string
+        tolerationSeconds: integer
+      TopologySpreadConfig:
+        enabled: boolean | default=false
+        topologyKey: string | default="kubernetes.io/hostname"
+        maxSkew: integer | default=1
+        whenUnsatisfiable: string | default="ScheduleAnyway"
       RuntimeConfig:
         imagePullSecrets: "[]LocalObjectReference"
         imagePullPolicy: string | default="IfNotPresent"
@@ -46,6 +75,11 @@ spec:
         deploymentAnnotations: "map[string]string"
         podAnnotations: "map[string]string"
         nodeSelector: "map[string]string"
+        priorityClassName: string
+        tolerations: "[]Toleration"
+        podSecurityContext: PodSecurityContext
+        containerSecurityContext: ContainerSecurityContext
+        topologySpread: TopologySpreadConfig
         resources: ResourceRequirements
       ServiceConfig:
         type: string | default="ClusterIP"
@@ -197,6 +231,25 @@ spec:
               serviceAccountName: ${schema.spec.?runtime.?serviceAccountName.orValue(serviceAccount.metadata.name)}
               imagePullSecrets: ${schema.spec.?runtime.?imagePullSecrets.orValue([])}
               nodeSelector: ${schema.spec.?runtime.?nodeSelector.orValue({})}
+              priorityClassName: ${schema.spec.?runtime.?priorityClassName.orValue("")}
+              tolerations: ${schema.spec.?runtime.?tolerations.orValue([])}
+              securityContext: ${schema.spec.?runtime.?podSecurityContext.orValue({})}
+              topologySpreadConstraints: >-
+                ${
+                  schema.spec.?runtime.?topologySpread.?enabled.orValue(false)
+                  ? [{
+                      "maxSkew": schema.spec.?runtime.?topologySpread.?maxSkew.orValue(1),
+                      "topologyKey": schema.spec.?runtime.?topologySpread.?topologyKey.orValue("kubernetes.io/hostname"),
+                      "whenUnsatisfiable": schema.spec.?runtime.?topologySpread.?whenUnsatisfiable.orValue("ScheduleAnyway"),
+                      "labelSelector": {
+                        "matchLabels": {
+                          "app.kubernetes.io/name": schema.spec.name,
+                          "app.kubernetes.io/instance": schema.metadata.name
+                        }
+                      }
+                    }]
+                  : []
+                }
               containers:
                 - name: app
                   image: ${schema.spec.image}
@@ -208,6 +261,7 @@ spec:
                   envFrom:
                     - configMapRef:
                         name: ${configMap.metadata.name}
+                  securityContext: ${schema.spec.?runtime.?containerSecurityContext.orValue({})}
                   resources:
                     requests:
                       cpu: ${schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m")}

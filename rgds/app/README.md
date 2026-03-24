@@ -92,6 +92,11 @@ Additive v2 responsibilities implemented in this repo revision:
 - `runtime.deploymentAnnotations`
 - `runtime.podAnnotations`
 - `runtime.nodeSelector`
+- `runtime.priorityClassName`
+- `runtime.tolerations`
+- `runtime.podSecurityContext`
+- `runtime.containerSecurityContext`
+- `runtime.topologySpread`
 - `runtime.resources`
 - `service.type`
 - `service.annotations`
@@ -138,6 +143,14 @@ Explicit container environment projection is available through:
 `config.env[].valueFrom.resourceFieldRef` is supported without `divisor`. The
 live KRO validation path in this cluster rejected `divisor` as not structurally
 compatible with the expected Deployment env schema.
+
+`runtime.priorityClassName`, `runtime.tolerations`, and the validated
+security-context fields give `App` a first usable security and placement story
+for HTTP workloads.
+
+`runtime.topologySpread` is a validated generated preset rather than a full raw
+Kubernetes `topologySpreadConstraints` passthrough. Full affinity-style
+placement remains future design work.
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can
