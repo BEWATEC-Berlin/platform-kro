@@ -267,7 +267,7 @@ The current transitional RGD already implements:
 - `runtime.restrictedSecurity`
 - `runtime.resources`
 - `service.type`
-- `disruptionBudget.maxUnavailable`
+- `disruptionBudget.maxUnavailableCount`
 
 ### Implemented In This Next Transitional Round
 
@@ -321,7 +321,7 @@ These fields are still deferred to a later transitional round:
 - startup probes and non-HTTP probe types such as gRPC or exec probes
 - richer raw pod and container `securityContext` support in the RGD
 - richer affinity controls beyond the current validated topology-spread preset
-- richer `PodDisruptionBudget` support such as `minAvailable`, percent values, or policy presets
+- richer `PodDisruptionBudget` support such as `minAvailable`, percent-based compatibility handling, or policy presets
 - observability CRDs such as `ServiceMonitor`
 - deployment-shaped persistence
 

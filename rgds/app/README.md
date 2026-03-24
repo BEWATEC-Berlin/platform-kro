@@ -101,7 +101,7 @@ Additive v2 responsibilities implemented in this repo revision:
 - `runtime.resources`
 - `service.type`
 - `service.annotations`
-- `disruptionBudget.maxUnavailable`
+- `disruptionBudget.maxUnavailableCount`
 
 Planned next responsibilities should be reasoned about in these buckets:
 
@@ -184,7 +184,7 @@ probe passthrough remain deferred.
 `disruptionBudget` is the current disruption-budget path. It creates an optional
 `policy/v1` `PodDisruptionBudget` that selects the `App` pods by the stable
 `app.kubernetes.io/name` and `app.kubernetes.io/instance` labels. The current
-contract intentionally stays narrow and exposes only integer `maxUnavailable`.
+contract intentionally stays narrow and exposes only integer `maxUnavailableCount`. The older string `maxUnavailable` field remains in the schema for compatibility with earlier revisions, but the integer count field is the supported path.
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can
