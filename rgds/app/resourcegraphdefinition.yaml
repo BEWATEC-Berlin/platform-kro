@@ -266,9 +266,9 @@ spec:
                   env: ${schema.spec.?config.?env.orValue([])}
                   envFrom: >-
                     ${
-                      [{"configMapRef": {"name": configMap.metadata.name}}]
-                      + schema.spec.?config.?envFromConfigMaps.orValue([]).map(cm, {"configMapRef": {"name": cm.name}})
-                      + schema.spec.?config.?envFromSecrets.orValue([]).map(secretRef, {"secretRef": {"name": secretRef.name}})
+                      [{"configMapRef": {"name": configMap.metadata.name, "optional": false}}]
+                      + schema.spec.?config.?envFromConfigMaps.orValue([]).map(cm, {"configMapRef": {"name": cm.name, "optional": false}})
+                      + schema.spec.?config.?envFromSecrets.orValue([]).map(secretRef, {"secretRef": {"name": secretRef.name, "optional": false}})
                     }
                   readinessProbe: >-
                     ${
