@@ -63,7 +63,7 @@ spec:
         readOnlyRootFilesystem: boolean | default=false
       DisruptionBudgetConfig:
         enabled: boolean | default=false
-        maxUnavailable: string | default="1"
+        maxUnavailable: integer | default=1
       RuntimeConfig:
         imagePullSecrets: "[]LocalObjectReference"
         imagePullPolicy: string | default="IfNotPresent"
@@ -354,7 +354,7 @@ spec:
             app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
             app.kubernetes.io/managed-by: kro
         spec:
-          maxUnavailable: ${schema.spec.?disruptionBudget.?maxUnavailable.orValue("1")}
+          maxUnavailable: ${schema.spec.?disruptionBudget.?maxUnavailable.orValue(1)}
           selector:
             matchLabels:
               app.kubernetes.io/name: ${schema.spec.name}

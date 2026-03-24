@@ -184,7 +184,7 @@ probe passthrough remain deferred.
 `disruptionBudget` is the current disruption-budget path. It creates an optional
 `policy/v1` `PodDisruptionBudget` that selects the `App` pods by the stable
 `app.kubernetes.io/name` and `app.kubernetes.io/instance` labels. The current
-contract intentionally stays narrow and exposes only `maxUnavailable`.
+contract intentionally stays narrow and exposes only integer `maxUnavailable`.
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can

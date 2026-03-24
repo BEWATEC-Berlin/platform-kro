@@ -38,4 +38,4 @@ spec:
     type: ClusterIP
   disruptionBudget:
     enabled: true
-    maxUnavailable: "1"
+    maxUnavailable: 1

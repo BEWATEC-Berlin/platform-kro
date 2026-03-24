@@ -321,7 +321,7 @@ These fields are still deferred to a later transitional round:
 - startup probes and non-HTTP probe types such as gRPC or exec probes
 - richer raw pod and container `securityContext` support in the RGD
 - richer affinity controls beyond the current validated topology-spread preset
-- richer `PodDisruptionBudget` support such as `minAvailable` or policy presets
+- richer `PodDisruptionBudget` support such as `minAvailable`, percent values, or policy presets
 - observability CRDs such as `ServiceMonitor`
 - deployment-shaped persistence
 
