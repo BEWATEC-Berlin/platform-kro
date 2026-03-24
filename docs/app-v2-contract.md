@@ -329,6 +329,14 @@ object interpolation for the pod and container `securityContext` fields in the
 generated `Deployment`. Until a cluster-valid rendering pattern is proven,
 those fields stay deferred in the executable contract.
 
+A second live verification on 2026-03-24 showed the operational impact in the
+development cluster: placement controls such as `runtime.tolerations` and
+`runtime.topologySpread` render correctly, but Kyverno-enforced restricted pod
+security still blocks the workload from becoming healthy because `App` cannot
+yet express the required container `securityContext`. In clusters with an
+equivalent restricted policy baseline, `App` currently needs an exception path
+or a narrower consumer scope until security-context support is added.
+
 ## Compatibility Mapping
 
 The current schema should evolve toward the target shape using a deliberate

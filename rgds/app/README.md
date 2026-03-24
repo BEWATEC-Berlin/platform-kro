@@ -157,6 +157,13 @@ rejected the attempted optional-object interpolation for the generated
 `ResourceGraphDefinition` inactive. That capability remains deferred until a
 cluster-valid rendering pattern is proven.
 
+In the development cluster, that limitation is operationally visible: a live
+placement test on 2026-03-24 showed that `runtime.tolerations` and
+`runtime.topologySpread` render into the generated `Deployment`, but the pod
+still violates the cluster's restricted Kyverno policy because `App` cannot yet
+set the required container `securityContext`. Consumers should treat restricted
+pod-security compliance as a current gap in the `App` contract.
+
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can
 force a rollout by patching one short field without depending on Kustomize
