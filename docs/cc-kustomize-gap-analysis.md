@@ -84,19 +84,16 @@ These patterns are the migration corpus that should drive API design.
 
 ### 1. `App` Is Too Thin For The Existing HTTP Workloads
 
-The current `App` contract does not yet cover many repeated workload concerns
-already present across the consumer repos:
+The current `App` contract still leaves several repeated workload concerns
+outside the executable platform API:
 
-- resource requests and limits
 - liveness and readiness probes
-- image pull secrets
-- labels and annotations beyond the minimal first pass
-- config and secret projection variants
 - pod and container security context
 - richer pod placement controls such as full affinity policies beyond the current validated spread preset
 - optional disruption budgets
 - optional observability bindings
 - optional PVC attachments for deployment-shaped workloads
+- broader secret and config composition beyond the current `config.data`, generated config-map `envFrom`, and explicit `config.env` model
 
 Without those features, most HTTP services still need large raw deployment
 manifests beside the platform API.

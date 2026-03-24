@@ -244,7 +244,6 @@ It also includes additive transitional blocks:
 
 - `runtime`
 - `service`
-- `availability`
 
 Those transitional blocks are useful because they let the contract grow without
 an immediate breaking schema rewrite.
