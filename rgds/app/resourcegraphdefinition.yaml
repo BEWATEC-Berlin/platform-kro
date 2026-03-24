@@ -70,7 +70,6 @@ spec:
         revision: string
         data: "map[string]string"
         env: "[]EnvVar"
-        envFrom: "[]map[string]map[string]string"
       runtime: RuntimeConfig
       service: ServiceConfig
       autoscaling:
@@ -206,11 +205,9 @@ spec:
                     - containerPort: ${schema.spec.port}
                       name: http
                   env: ${schema.spec.?config.?env.orValue([])}
-                  envFrom: >-
-                    ${
-                      [{"configMapRef": {"name": configMap.metadata.name}}] +
-                      schema.spec.?config.?envFrom.orValue([])
-                    }
+                  envFrom:
+                    - configMapRef:
+                        name: ${configMap.metadata.name}
                   resources:
                     requests:
                       cpu: ${schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m")}

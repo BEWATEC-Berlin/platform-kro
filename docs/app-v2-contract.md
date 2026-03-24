@@ -286,20 +286,24 @@ static validation. The attempted expression produced a `map` or `null` branch,
 which KRO rejected for `Deployment` probe fields during `ResourceGraphDefinition`
 validation.
 
-Explicit `env` and `envFrom` projection is now implemented. The current `App`
-contract emits a generated config-map `envFrom` entry, supports additive name-based
-`config.envFrom` sources, and allows `config.env` entries with literal `value`,
-`valueFrom.fieldRef`, `valueFrom.resourceFieldRef`, `valueFrom.secretKeyRef`, and
-`valueFrom.configMapKeyRef`. `config.data` still defaults to an empty map so
-`App` can materialize when no config literals are supplied. `config.revision`
-is available as an explicit rollout token and is stamped onto the pod template
-so overlays can trigger deployment rollout without depending on generated
-config-map name changes. The intended Kustomize pattern is to patch
-`config.data` normally in overlays and patch `config.revision` only when the
-config change must force a rollout. Automatic database/cache environment-
-variable injection remains deferred because the first cross-resource
-interpolation pattern did not produce a reliable `Deployment` in live KRO
-verification.
+Explicit `env` projection is now implemented. The current `App` contract emits
+a generated config-map `envFrom` entry and allows `config.env` entries with
+literal `value`, `valueFrom.fieldRef`, `valueFrom.resourceFieldRef`,
+`valueFrom.secretKeyRef`, and `valueFrom.configMapKeyRef`. `config.data` still
+defaults to an empty map so `App` can materialize when no config literals are
+supplied. `config.revision` is available as an explicit rollout token and is
+stamped onto the pod template so overlays can trigger deployment rollout
+without depending on generated config-map name changes. The intended Kustomize
+pattern is to patch `config.data` normally in overlays and patch
+`config.revision` only when the config change must force a rollout. Automatic
+database/cache environment-variable injection remains deferred because the first
+cross-resource interpolation pattern did not produce a reliable `Deployment` in
+live KRO verification.
+
+Explicit additive `config.envFrom` support was attempted and rejected by live
+KRO validation on 2026-03-24. The current blocker is structural type matching
+for Kubernetes `EnvFromSource`, especially around the sibling `prefix` field in
+the expected Deployment schema. That capability remains deferred.
 
 ### Deliberately Deferred Again
 
@@ -337,7 +341,6 @@ mapping.
 | `autoscaling` | `workload` | `workload.autoscaling` |
 | `config.data` | `config` | `config.data` |
 | `config.env` | `config` | `config.env` |
-| `config.envFrom` | `config` | `config.envFrom` |
 | `config.revision` | `config` | `config.revision` |
 | `dependencies` | `config` | `config.dependencies` |
 | `externalSecret` | `config` | `config.externalSecrets` or `config.externalSecret` |

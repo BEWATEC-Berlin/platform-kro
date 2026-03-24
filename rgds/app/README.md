@@ -134,11 +134,6 @@ Explicit container environment projection is available through:
 
 - `config.env` for literal `value` and `valueFrom` entries, including
   `fieldRef`, `resourceFieldRef`, `secretKeyRef`, and `configMapKeyRef`
-- `config.envFrom` for additional name-based `configMapRef` and `secretRef` sources
-
-The current `config.envFrom` shape intentionally supports name-based refs only.
-Kubernetes `prefix` support is still deferred until KRO can express the merged
-list without invalidating the resource graph.
 
 `config.env[].valueFrom.resourceFieldRef` is supported without `divisor`. The
 live KRO validation path in this cluster rejected `divisor` as not structurally
@@ -148,6 +143,11 @@ compatible with the expected Deployment env schema.
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can
 force a rollout by patching one short field without depending on Kustomize
 `configMapGenerator` name hashing.
+
+Additive `config.envFrom` support is still deferred. A live KRO validation pass
+on 2026-03-24 rejected the merged `EnvFromSource` shape needed to combine user
+refs with the generated config-map `envFrom` entry while keeping the resource
+graph active.
 
 The intended pattern is:
 

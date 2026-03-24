@@ -49,8 +49,8 @@ These source fields map directly onto the current `App` contract:
 
 ### Adapted To Fit The Current Contract
 
-The current `App` contract now supports explicit user-owned `config.env` and
-`config.envFrom` projection.
+The current `App` contract now supports explicit user-owned `config.env`
+projection.
 
 For this spike, the source deployment environment is represented directly in
 `config.env`. That includes `valueFrom.fieldRef` for `OTEL_SERVICE_NAME`, so the
