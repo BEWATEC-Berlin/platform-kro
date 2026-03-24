@@ -50,6 +50,14 @@ spec:
         topologyKey: string | default="kubernetes.io/hostname"
         maxSkew: integer | default=1
         whenUnsatisfiable: string | default="ScheduleAnyway"
+      HttpProbeConfig:
+        enabled: boolean | default=false
+        path: string | default="/"
+        initialDelaySeconds: integer | default=0
+        periodSeconds: integer | default=10
+        timeoutSeconds: integer | default=1
+        successThreshold: integer | default=1
+        failureThreshold: integer | default=3
       RestrictedSecurityConfig:
         enabled: boolean | default=false
         readOnlyRootFilesystem: boolean | default=false
@@ -63,6 +71,8 @@ spec:
         priorityClassName: string
         tolerations: "[]Toleration"
         topologySpread: TopologySpreadConfig
+        readinessProbe: HttpProbeConfig
+        livenessProbe: HttpProbeConfig
         restrictedSecurity: RestrictedSecurityConfig
         resources: ResourceRequirements
       ServiceConfig:
@@ -244,6 +254,38 @@ spec:
                   envFrom:
                     - configMapRef:
                         name: ${configMap.metadata.name}
+                  readinessProbe: >-
+                    ${
+                      schema.spec.?runtime.?readinessProbe.?enabled.orValue(false)
+                      ? {
+                          "httpGet": {
+                            "path": schema.spec.?runtime.?readinessProbe.?path.orValue("/"),
+                            "port": "http"
+                          },
+                          "initialDelaySeconds": schema.spec.?runtime.?readinessProbe.?initialDelaySeconds.orValue(0),
+                          "periodSeconds": schema.spec.?runtime.?readinessProbe.?periodSeconds.orValue(10),
+                          "timeoutSeconds": schema.spec.?runtime.?readinessProbe.?timeoutSeconds.orValue(1),
+                          "successThreshold": schema.spec.?runtime.?readinessProbe.?successThreshold.orValue(1),
+                          "failureThreshold": schema.spec.?runtime.?readinessProbe.?failureThreshold.orValue(3)
+                        }
+                      : {}
+                    }
+                  livenessProbe: >-
+                    ${
+                      schema.spec.?runtime.?livenessProbe.?enabled.orValue(false)
+                      ? {
+                          "httpGet": {
+                            "path": schema.spec.?runtime.?livenessProbe.?path.orValue("/"),
+                            "port": "http"
+                          },
+                          "initialDelaySeconds": schema.spec.?runtime.?livenessProbe.?initialDelaySeconds.orValue(0),
+                          "periodSeconds": schema.spec.?runtime.?livenessProbe.?periodSeconds.orValue(10),
+                          "timeoutSeconds": schema.spec.?runtime.?livenessProbe.?timeoutSeconds.orValue(1),
+                          "successThreshold": schema.spec.?runtime.?livenessProbe.?successThreshold.orValue(1),
+                          "failureThreshold": schema.spec.?runtime.?livenessProbe.?failureThreshold.orValue(3)
+                        }
+                      : {}
+                    }
                   securityContext: >-
                     ${
                       schema.spec.?runtime.?restrictedSecurity.?enabled.orValue(false)

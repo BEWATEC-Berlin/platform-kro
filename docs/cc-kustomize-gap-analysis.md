@@ -87,7 +87,7 @@ These patterns are the migration corpus that should drive API design.
 The current `App` contract still leaves several repeated workload concerns
 outside the executable platform API:
 
-- liveness and readiness probes
+- startup probes and non-HTTP probe types beyond the current HTTP readiness/liveness model
 - richer pod and container security context support beyond the current restricted preset
 - richer pod placement controls such as full affinity policies beyond the current validated spread preset
 - optional disruption budgets

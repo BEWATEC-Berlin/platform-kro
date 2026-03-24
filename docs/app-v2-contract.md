@@ -62,8 +62,10 @@ spec:
     podAnnotations: {}
     nodeSelector: {}
     probes:
-      readiness: {}
-      liveness: {}
+      readiness:
+        path: /
+      liveness:
+        path: /
     autoscaling:
       enabled: false
     disruptionBudget:
@@ -260,6 +262,8 @@ The current transitional RGD already implements:
 - `runtime.priorityClassName`
 - `runtime.tolerations`
 - `runtime.topologySpread`
+- `runtime.readinessProbe`
+- `runtime.livenessProbe`
 - `runtime.restrictedSecurity`
 - `runtime.resources`
 - `service.type`
@@ -282,13 +286,13 @@ These fields were chosen because they are common in the scanned HTTP workloads
 and fit the current deployment-shaped `App` without introducing awkward merge
 semantics or new CRD dependencies.
 
-This transitional round keeps probe design at the documentation level only.
+HTTP `readinessProbe` and `livenessProbe` support is now implemented.
 
-A live cluster verification on 2026-03-24 against KRO `v0.8.5` showed that the
-first null-based conditional probe rendering pattern is not accepted by KRO
-static validation. The attempted expression produced a `map` or `null` branch,
-which KRO rejected for `Deployment` probe fields during `ResourceGraphDefinition`
-validation.
+A live cluster verification on 2026-03-24 against KRO `v0.8.5` confirmed that
+the original null-based conditional probe rendering pattern was the wrong
+shape. The current implementation uses an object-or-empty-map rendering model
+for HTTP probes on the named `http` container port, which KRO accepts in this
+cluster.
 
 Explicit `env` projection is now implemented. The current `App` contract emits
 a generated config-map `envFrom` entry and allows `config.env` entries with
@@ -313,7 +317,7 @@ the expected Deployment schema. That capability remains deferred.
 
 These fields are still deferred to a later transitional round:
 
-- executable probe support in the RGD
+- startup probes and non-HTTP probe types such as gRPC or exec probes
 - richer raw pod and container `securityContext` support in the RGD
 - richer affinity controls beyond the current validated topology-spread preset
 - executable `PodDisruptionBudget` support in the RGD
@@ -362,6 +366,8 @@ mapping.
 | `runtime.priorityClassName` | `workload` | `workload.priorityClassName` |
 | `runtime.tolerations` | `workload` | `workload.tolerations` |
 | `runtime.topologySpread` | `workload` | `workload.topologySpread` |
+| `runtime.readinessProbe` | `workload` | `workload.probes.readiness` |
+| `runtime.livenessProbe` | `workload` | `workload.probes.liveness` |
 | `runtime.restrictedSecurity` | `workload` | `workload.restrictedSecurity` |
 | `autoscaling` | `workload` | `workload.autoscaling` |
 | `config.data` | `config` | `config.data` |

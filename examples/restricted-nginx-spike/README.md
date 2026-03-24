@@ -10,6 +10,7 @@ Kyverno policy.
 
 - `App` instance creation under `platform.connectedcare.io/v1alpha1`
 - generated Deployment with a restricted-compliant container `securityContext`
+- generated HTTP readiness and liveness probes against the named `http` port
 - deployment availability in the development cluster without a policy exception
 
 ## Render Command

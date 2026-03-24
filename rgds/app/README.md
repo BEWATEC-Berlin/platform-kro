@@ -95,6 +95,8 @@ Additive v2 responsibilities implemented in this repo revision:
 - `runtime.priorityClassName`
 - `runtime.tolerations`
 - `runtime.topologySpread`
+- `runtime.readinessProbe`
+- `runtime.livenessProbe`
 - `runtime.restrictedSecurity`
 - `runtime.resources`
 - `service.type`
@@ -103,7 +105,7 @@ Additive v2 responsibilities implemented in this repo revision:
 Planned next responsibilities should be reasoned about in these buckets:
 
 - `workload`: richer runtime controls, scaling, resilience, and
-  cluster-validated models for probes and disruption budgets
+  cluster-validated HTTP probe models and disruption budgets
 - `config`: config and secret projection patterns used repeatedly across app
   repos, including explicit env/envFrom projection and later secret/config
   composition refinements
@@ -171,6 +173,12 @@ renders a fixed container `securityContext` with:
 This was verified live on 2026-03-24 in the development cluster with a
 non-root image. It satisfies the restricted Kyverno policy that previously
 blocked the test workload.
+
+`runtime.readinessProbe` and `runtime.livenessProbe` are the supported probe
+path in the current `App` contract. They render HTTP GET probes against the
+container's named `http` port, with the probe path and timing values owned by
+the `App` spec. Startup probes, gRPC probes, exec probes, and raw Kubernetes
+probe passthrough remain deferred.
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can

@@ -15,6 +15,16 @@ spec:
   config:
     revision: restricted-1
   runtime:
+    readinessProbe:
+      enabled: true
+      path: /
+      initialDelaySeconds: 1
+      periodSeconds: 5
+    livenessProbe:
+      enabled: true
+      path: /
+      initialDelaySeconds: 5
+      periodSeconds: 10
     restrictedSecurity:
       enabled: true
     resources:

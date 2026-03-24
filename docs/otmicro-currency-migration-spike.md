@@ -102,8 +102,10 @@ The first verification pass exposed a real platform issue:
 - because the RGD was inactive, the `App` CRD schema on the cluster did not pick
   up the new fields and the example `App` instance was rejected by the API
 
-That probe implementation was then removed from the executable RGD and deferred
-back to design work.
+That first probe implementation was then removed from the executable RGD and
+reworked. The current repo now supports HTTP readiness and liveness probes with
+a cluster-validated object-or-empty-map rendering pattern, but richer probe
+types remain deferred.
 
 A second live-cluster verification also showed that the current KRO service
 account in this environment cannot list `policy/v1` `PodDisruptionBudget`
@@ -118,7 +120,7 @@ end.
 
 This spike now confirms that the next meaningful `App` gaps are:
 
-- richer probe support for non-HTTP workloads such as gRPC health
+- richer probe support for startup, gRPC, or exec health checks
 - broader pod and container `securityContext` support beyond the current restricted preset
 - multi-container and init-container support
 
