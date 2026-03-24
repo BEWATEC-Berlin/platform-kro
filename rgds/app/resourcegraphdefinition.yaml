@@ -39,24 +39,6 @@ spec:
         name: string | required=true
         value: string
         valueFrom: EnvVarSource
-      SeccompProfile:
-        type: string | required=true
-      Capabilities:
-        drop: "[]string"
-      PodSecurityContext:
-        runAsNonRoot: boolean
-        runAsUser: integer
-        runAsGroup: integer
-        fsGroup: integer
-        seccompProfile: SeccompProfile
-      ContainerSecurityContext:
-        allowPrivilegeEscalation: boolean
-        readOnlyRootFilesystem: boolean
-        runAsNonRoot: boolean
-        runAsUser: integer
-        runAsGroup: integer
-        capabilities: Capabilities
-        seccompProfile: SeccompProfile
       Toleration:
         key: string
         operator: string
@@ -77,8 +59,6 @@ spec:
         nodeSelector: "map[string]string"
         priorityClassName: string
         tolerations: "[]Toleration"
-        podSecurityContext: PodSecurityContext
-        containerSecurityContext: ContainerSecurityContext
         topologySpread: TopologySpreadConfig
         resources: ResourceRequirements
       ServiceConfig:
@@ -233,7 +213,6 @@ spec:
               nodeSelector: ${schema.spec.?runtime.?nodeSelector.orValue({})}
               priorityClassName: ${schema.spec.?runtime.?priorityClassName.orValue("")}
               tolerations: ${schema.spec.?runtime.?tolerations.orValue([])}
-              securityContext: ${schema.spec.?runtime.?podSecurityContext.orValue({})}
               topologySpreadConstraints: >-
                 ${
                   schema.spec.?runtime.?topologySpread.?enabled.orValue(false)
@@ -261,7 +240,6 @@ spec:
                   envFrom:
                     - configMapRef:
                         name: ${configMap.metadata.name}
-                  securityContext: ${schema.spec.?runtime.?containerSecurityContext.orValue({})}
                   resources:
                     requests:
                       cpu: ${schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m")}

@@ -92,6 +92,7 @@ already present across the consumer repos:
 - image pull secrets
 - labels and annotations beyond the minimal first pass
 - config and secret projection variants
+- pod and container security context
 - richer pod placement controls such as full affinity policies beyond the current validated spread preset
 - optional disruption budgets
 - optional observability bindings

@@ -119,6 +119,7 @@ end.
 This spike now confirms that the next meaningful `App` gaps are:
 
 - richer probe support for non-HTTP workloads such as gRPC health
+- executable pod and container `securityContext` support with a KRO-valid rendering model
 - multi-container and init-container support
 
 ## Example Artifact

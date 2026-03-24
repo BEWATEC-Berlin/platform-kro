@@ -177,7 +177,6 @@ Candidate contents:
 - node selector
 - priority class and tolerations
 - topology spread constraints
-- pod and container security context
 - richer affinity controls
 - probes
 - autoscaling
@@ -260,8 +259,6 @@ The current transitional RGD already implements:
 - `runtime.nodeSelector`
 - `runtime.priorityClassName`
 - `runtime.tolerations`
-- `runtime.podSecurityContext`
-- `runtime.containerSecurityContext`
 - `runtime.topologySpread`
 - `runtime.resources`
 - `service.type`
@@ -316,6 +313,7 @@ the expected Deployment schema. That capability remains deferred.
 These fields are still deferred to a later transitional round:
 
 - executable probe support in the RGD
+- executable pod and container `securityContext` support in the RGD
 - richer affinity controls beyond the current validated topology-spread preset
 - executable `PodDisruptionBudget` support in the RGD
 - observability CRDs such as `ServiceMonitor`
@@ -325,6 +323,12 @@ They remain deferred because they add external CRD coupling, require cleaner
 merge semantics with the current generated environment wiring, still need a
 cluster-validated rendering pattern, or depend on controller RBAC that is not
 yet guaranteed in the target cluster baseline.
+
+Whole-object `securityContext` passthrough was attempted on 2026-03-24 and
+rejected by live KRO `v0.8.5` validation. The failing pattern was optional
+object interpolation for the pod and container `securityContext` fields in the
+generated `Deployment`. Until a cluster-valid rendering pattern is proven,
+those fields stay deferred in the executable contract.
 
 ## Compatibility Mapping
 
@@ -347,8 +351,6 @@ mapping.
 | `runtime.nodeSelector` | `workload` | `workload.nodeSelector` |
 | `runtime.priorityClassName` | `workload` | `workload.priorityClassName` |
 | `runtime.tolerations` | `workload` | `workload.tolerations` |
-| `runtime.podSecurityContext` | `workload` | `workload.podSecurityContext` |
-| `runtime.containerSecurityContext` | `workload` | `workload.containerSecurityContext` |
 | `runtime.topologySpread` | `workload` | `workload.topologySpread` |
 | `autoscaling` | `workload` | `workload.autoscaling` |
 | `config.data` | `config` | `config.data` |
