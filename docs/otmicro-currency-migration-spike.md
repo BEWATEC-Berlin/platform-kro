@@ -107,11 +107,10 @@ reworked. The current repo now supports HTTP readiness and liveness probes with
 a cluster-validated object-or-empty-map rendering pattern, but richer probe
 types remain deferred.
 
-A second live-cluster verification also showed that the current KRO service
-account in this environment cannot list `policy/v1` `PodDisruptionBudget`
-resources cluster-wide. Keeping executable PDB support in the `App` RGD therefore
-also leaves the graph inactive in this cluster. That support was deferred as
-well for this verified baseline.
+At that point in the repo history, disruption-budget support was still
+deferred. As of 2026-03-24 later in the same validation cycle, the consumer
+cluster RBAC was widened and `App` now supports a narrow optional
+`PodDisruptionBudget` path using `disruptionBudget.maxUnavailable`.
 
 The rest of the migration spike remained valid and could then be verified end to
 end.

@@ -90,7 +90,6 @@ outside the executable platform API:
 - startup probes and non-HTTP probe types beyond the current HTTP readiness/liveness model
 - richer pod and container security context support beyond the current restricted preset
 - richer pod placement controls such as full affinity policies beyond the current validated spread preset
-- optional disruption budgets
 - optional observability bindings
 - optional PVC attachments for deployment-shaped workloads
 - broader secret and config composition beyond the current `config.data`, generated config-map `envFrom`, and explicit `config.env` model
@@ -161,7 +160,7 @@ The platform needs an explicit position on:
 | `cc-accounting-middleware` | Simple HTTP service with PVC, `ExternalSecret`, `IngressRoute` | Low to medium | `App` needs PVC attachments, richer runtime options, and `HTTPRoute` migration |
 | `cc-backend-api` | HTTP service with PostgreSQL, `ExternalSecret`, `CronJob`, PDB, backups | Low | `App` needs richer deployment controls; platform needs clear PostgreSQL backup model and recurring task story |
 | `cc-e2e-identity-management` | Namespace plus `CronJob` overlays | Low | likely needs a dedicated `ScheduledTask`-style API rather than `App` |
-| `cc-epg-service` | HTTP service with `ExternalSecret`, monitoring, PDB | Medium | `App` needs observability and disruption-budget support plus `HTTPRoute` migration |
+| `cc-epg-service` | HTTP service with `ExternalSecret`, monitoring, PDB | Medium | `App` needs observability support plus `HTTPRoute` migration |
 | `cc-infotainment-pin-service` | HTTP service with PostgreSQL plus backup and restore flows | Low | same as `cc-backend-api`, plus clearer restore and operational workflow boundaries |
 | `cc-kis-federated-service` | HTTP service with mixed secret patterns and monitoring | Medium | `App` needs secret model normalization, observability support, and `HTTPRoute` migration |
 | `cc-limesurvey-cfg` | App plus MariaDB, PVC, backup, DB user, `IngressRouteTCP` | Very low | current APIs do not cover MariaDB shape, stateful storage, or TCP exposure |
@@ -231,7 +230,6 @@ Expand `App` to cover the common HTTP workload contract:
 - image pull secrets
 - richer pod placement controls
 - env and secret projection
-- optional `PodDisruptionBudget`
 - optional monitoring attachment
 - `HTTPRoute` as the only built-in HTTP exposure primitive
 

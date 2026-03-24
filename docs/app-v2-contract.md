@@ -267,6 +267,7 @@ The current transitional RGD already implements:
 - `runtime.restrictedSecurity`
 - `runtime.resources`
 - `service.type`
+- `disruptionBudget.maxUnavailable`
 
 ### Implemented In This Next Transitional Round
 
@@ -320,7 +321,7 @@ These fields are still deferred to a later transitional round:
 - startup probes and non-HTTP probe types such as gRPC or exec probes
 - richer raw pod and container `securityContext` support in the RGD
 - richer affinity controls beyond the current validated topology-spread preset
-- executable `PodDisruptionBudget` support in the RGD
+- richer `PodDisruptionBudget` support such as `minAvailable` or policy presets
 - observability CRDs such as `ServiceMonitor`
 - deployment-shaped persistence
 
@@ -378,6 +379,7 @@ mapping.
 | `port` | `network` | `network.service.port` |
 | `service.type` | `network` | `network.service.type` |
 | `service.annotations` | `network` | `network.service.annotations` |
+| `disruptionBudget` | `workload` | `workload.disruptionBudget` |
 | `route` | `network` | `network.httpRoute` |
 | `certificate` | `network` | `network.certificate` |
 
