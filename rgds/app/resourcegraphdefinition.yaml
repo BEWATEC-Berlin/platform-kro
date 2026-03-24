@@ -65,6 +65,11 @@ spec:
         enabled: boolean | default=false
         maxUnavailable: string | default="1"
         maxUnavailableCount: integer | default=1
+      ServiceMonitorConfig:
+        enabled: boolean | default=false
+        path: string | default="/metrics"
+        interval: string | default="30s"
+        scrapeTimeout: string | default="10s"
       RuntimeConfig:
         imagePullSecrets: "[]LocalObjectReference"
         imagePullPolicy: string | default="IfNotPresent"
@@ -104,6 +109,7 @@ spec:
         env: "[]EnvVar"
       runtime: RuntimeConfig
       service: ServiceConfig
+      serviceMonitor: ServiceMonitorConfig
       disruptionBudget: DisruptionBudgetConfig
       autoscaling:
         enabled: boolean | default=false
@@ -360,6 +366,32 @@ spec:
             matchLabels:
               app.kubernetes.io/name: ${schema.spec.name}
               app.kubernetes.io/instance: ${schema.metadata.name}
+    - id: serviceMonitor
+      includeWhen:
+        - ${schema.spec.?serviceMonitor.?enabled.orValue(false)}
+      template:
+        apiVersion: monitoring.coreos.com/v1
+        kind: ServiceMonitor
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
+        spec:
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: ${schema.spec.name}
+              app.kubernetes.io/instance: ${schema.metadata.name}
+          endpoints:
+            - port: http
+              path: ${schema.spec.?serviceMonitor.?path.orValue("/metrics")}
+              interval: ${schema.spec.?serviceMonitor.?interval.orValue("30s")}
+              scrapeTimeout: ${schema.spec.?serviceMonitor.?scrapeTimeout.orValue("10s")}
     - id: autoscaler
       includeWhen:
         - ${schema.spec.autoscaling.enabled}

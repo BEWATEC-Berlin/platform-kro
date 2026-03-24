@@ -101,6 +101,8 @@ Additive v2 responsibilities implemented in this repo revision:
 - `runtime.resources`
 - `service.type`
 - `service.annotations`
+- `serviceMonitor.path`
+- `serviceMonitor.interval`
 - `disruptionBudget.maxUnavailableCount`
 
 Planned next responsibilities should be reasoned about in these buckets:
@@ -185,6 +187,12 @@ probe passthrough remain deferred.
 `policy/v1` `PodDisruptionBudget` that selects the `App` pods by the stable
 `app.kubernetes.io/name` and `app.kubernetes.io/instance` labels. The current
 contract intentionally stays narrow and exposes only integer `maxUnavailableCount`. The older string `maxUnavailable` field remains in the schema for compatibility with earlier revisions, but the integer count field is the supported path.
+
+`serviceMonitor` is the current observability path. It creates an optional
+`monitoring.coreos.com/v1` `ServiceMonitor` that selects the `App` service by
+the same stable labels and scrapes the named `http` port. The current contract
+intentionally stays narrow and exposes only `path`, `interval`, and
+`scrapeTimeout`.
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can

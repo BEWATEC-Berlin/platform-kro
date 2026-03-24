@@ -36,6 +36,11 @@ spec:
         memory: 64Mi
   service:
     type: ClusterIP
+  serviceMonitor:
+    enabled: true
+    path: /
+    interval: 30s
+    scrapeTimeout: 10s
   disruptionBudget:
     enabled: true
     maxUnavailableCount: 1

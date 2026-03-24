@@ -267,6 +267,8 @@ The current transitional RGD already implements:
 - `runtime.restrictedSecurity`
 - `runtime.resources`
 - `service.type`
+- `serviceMonitor.path`
+- `serviceMonitor.interval`
 - `disruptionBudget.maxUnavailableCount`
 
 ### Implemented In This Next Transitional Round
@@ -322,7 +324,7 @@ These fields are still deferred to a later transitional round:
 - richer raw pod and container `securityContext` support in the RGD
 - richer affinity controls beyond the current validated topology-spread preset
 - richer `PodDisruptionBudget` support such as `minAvailable`, percent-based compatibility handling, or policy presets
-- observability CRDs such as `ServiceMonitor`
+- broader observability CRDs and policy beyond the current `ServiceMonitor` path
 - deployment-shaped persistence
 
 They remain deferred because they add external CRD coupling, require cleaner
@@ -379,6 +381,7 @@ mapping.
 | `port` | `network` | `network.service.port` |
 | `service.type` | `network` | `network.service.type` |
 | `service.annotations` | `network` | `network.service.annotations` |
+| `serviceMonitor` | `workload` | `workload.observability.serviceMonitor` |
 | `disruptionBudget` | `workload` | `workload.disruptionBudget` |
 | `route` | `network` | `network.httpRoute` |
 | `certificate` | `network` | `network.certificate` |

@@ -12,6 +12,7 @@ Kyverno policy.
 - generated Deployment with a restricted-compliant container `securityContext`
 - generated HTTP readiness and liveness probes against the named `http` port
 - generated `PodDisruptionBudget` for the `App` pods
+- generated `ServiceMonitor` for the same service labels and `http` port
 - deployment availability in the development cluster without a policy exception
 
 ## Render Command
