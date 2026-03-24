@@ -2,6 +2,7 @@ apiVersion: platform.connectedcare.io/v1alpha1
 kind: App
 metadata:
   name: currency
+  namespace: platform-kro-currency
 spec:
   name: currency
   namespace: platform-kro-currency
