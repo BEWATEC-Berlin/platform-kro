@@ -1,4 +1,4 @@
-apiVersion: platform.connectecare.io/v1alpha1
+apiVersion: platform.connectedcare.io/v1alpha1
 kind: App
 metadata:
   name: currency

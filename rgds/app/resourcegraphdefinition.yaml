@@ -1,11 +1,11 @@
 apiVersion: kro.run/v1alpha1
 kind: ResourceGraphDefinition
 metadata:
-  name: apps.platform.connectecare.io
+  name: apps.platform.connectedcare.io
 spec:
   schema:
     apiVersion: v1alpha1
-    group: platform.connectecare.io
+    group: platform.connectedcare.io
     kind: App
     types:
       LocalObjectReference:
@@ -122,7 +122,7 @@ spec:
       includeWhen:
         - ${schema.spec.dependencies.database.enabled}
       externalRef:
-        apiVersion: platform.connectecare.io/v1alpha1
+        apiVersion: platform.connectedcare.io/v1alpha1
         kind: DatabaseCluster
         metadata:
           name: ${schema.spec.dependencies.database.databaseClusterName}
@@ -131,7 +131,7 @@ spec:
       includeWhen:
         - ${schema.spec.dependencies.cache.enabled}
       externalRef:
-        apiVersion: platform.connectecare.io/v1alpha1
+        apiVersion: platform.connectedcare.io/v1alpha1
         kind: CacheCluster
         metadata:
           name: ${schema.spec.dependencies.cache.cacheClusterName}

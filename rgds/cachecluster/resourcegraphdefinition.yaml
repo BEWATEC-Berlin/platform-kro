@@ -1,11 +1,11 @@
 apiVersion: kro.run/v1alpha1
 kind: ResourceGraphDefinition
 metadata:
-  name: cacheclusters.platform.connectecare.io
+  name: cacheclusters.platform.connectedcare.io
 spec:
   schema:
     apiVersion: v1alpha1
-    group: platform.connectecare.io
+    group: platform.connectedcare.io
     kind: CacheCluster
     spec:
       name: string | required=true
