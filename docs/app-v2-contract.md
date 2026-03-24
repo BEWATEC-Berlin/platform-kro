@@ -290,11 +290,14 @@ validation.
 Explicit `env` and `envFrom` projection is still intentionally deferred. The
 current `App` contract emits a generated config-map `envFrom` entry, and
 `config.data` now defaults to an empty map so `App` can still materialize when
-no config literals are supplied. Automatic database/cache environment-variable
-injection is deferred because the first cross-resource interpolation pattern did
-not produce a reliable `Deployment` in live KRO verification. Adding user-owned
-lists safely still requires verified list-merge behavior in KRO rather than an
-unproven CEL concat pattern.
+no config literals are supplied. `config.revision` is also available as an
+explicit rollout token and is stamped onto the pod template so overlays can
+trigger deployment rollout without depending on generated config-map name
+changes. Automatic database/cache environment-variable injection is deferred
+because the first cross-resource interpolation pattern did not produce a
+reliable `Deployment` in live KRO verification. Adding user-owned lists safely
+still requires verified list-merge behavior in KRO rather than an unproven CEL
+concat pattern.
 
 ### Deliberately Deferred Again
 
@@ -332,6 +335,7 @@ mapping.
 | `runtime.nodeSelector` | `workload` | `workload.nodeSelector` |
 | `autoscaling` | `workload` | `workload.autoscaling` |
 | `config.data` | `config` | `config.data` |
+| `config.revision` | `config` | `config.revision` |
 | `dependencies` | `config` | `config.dependencies` |
 | `externalSecret` | `config` | `config.externalSecrets` or `config.externalSecret` |
 | `port` | `network` | `network.service.port` |

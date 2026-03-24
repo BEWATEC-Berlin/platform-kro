@@ -72,6 +72,7 @@ Current first-pass responsibilities:
 - `Service`
 - `ServiceAccount`
 - `ConfigMap`
+- config-driven rollout token through `config.revision`
 - dependency references to `DatabaseCluster` and `CacheCluster` through
   `externalRef`
 - optional `HorizontalPodAutoscaler`
@@ -127,3 +128,8 @@ When enabled, `App` binds to:
 The current deployment wiring references backing services through `externalRef`, but
 automatic database/cache environment-variable injection is deferred until it can
 be implemented without breaking deployment materialization in KRO.
+
+`config.revision` is available as an explicit rollout token. It is stamped onto
+the pod template as `platform.connectedcare.io/config-revision`, so overlays can
+force a rollout by patching one short field without depending on Kustomize
+`configMapGenerator` name hashing.

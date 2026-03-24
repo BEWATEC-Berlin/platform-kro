@@ -19,6 +19,7 @@ spec:
       enabled: false
       cacheClusterName: ""
   config:
+    revision: "demo-2-1-3"
     data:
       OTEL_SERVICE_NAME: currency
       OTEL_COLLECTOR_NAME: otel-collector

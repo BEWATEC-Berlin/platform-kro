@@ -44,6 +44,7 @@ spec:
           enabled: boolean | default=false
           cacheClusterName: string
       config:
+        revision: string
         data: "map[string]string"
       runtime: RuntimeConfig
       service: ServiceConfig
@@ -166,6 +167,7 @@ spec:
                 app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
                 app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
                 app.kubernetes.io/managed-by: kro
+                platform.connectedcare.io/config-revision: ${schema.spec.?config.?revision.orValue("")}
               annotations: ${schema.spec.?runtime.?podAnnotations.orValue({})}
             spec:
               serviceAccountName: ${schema.spec.?runtime.?serviceAccountName.orValue(serviceAccount.metadata.name)}
