@@ -7,9 +7,32 @@ spec:
     apiVersion: v1alpha1
     group: platform.connectecare.io
     kind: App
+    types:
+      LocalObjectReference:
+        name: string | required=true
+      ResourceValues:
+        cpu: string
+        memory: string
+      ResourceRequirements:
+        requests: ResourceValues
+        limits: ResourceValues
+      RuntimeConfig:
+        imagePullSecrets: "[]LocalObjectReference"
+        imagePullPolicy: string | default="IfNotPresent"
+        serviceAccountName: string
+        deploymentAnnotations: "map[string]string"
+        podAnnotations: "map[string]string"
+        nodeSelector: "map[string]string"
+        resources: ResourceRequirements
+      ServiceConfig:
+        type: string | default="ClusterIP"
+        annotations: "map[string]string"
     spec:
       name: string | required=true
       namespace: string | required=true
+      component: string
+      partOf: string
+      version: string
       image: string | required=true
       port: integer | default=8080
       replicas: integer | default=1
@@ -22,6 +45,8 @@ spec:
           cacheClusterName: string
       config:
         data: "map[string]string"
+      runtime: RuntimeConfig
+      service: ServiceConfig
       autoscaling:
         enabled: boolean | default=false
         minReplicas: integer | default=1
@@ -48,7 +73,21 @@ spec:
         dnsNames: "[]string"
     status:
       serviceName: ${service.metadata.name}
+      serviceType: ${service.spec.type}
       availableReplicas: ${deployment.status.availableReplicas}
+    additionalPrinterColumns:
+      - name: Service
+        type: string
+        jsonPath: .status.serviceName
+      - name: Type
+        type: string
+        jsonPath: .status.serviceType
+      - name: Available
+        type: integer
+        jsonPath: .status.availableReplicas
+      - name: Age
+        type: date
+        jsonPath: .metadata.creationTimestamp
   resources:
     - id: serviceAccount
       template:
@@ -57,6 +96,13 @@ spec:
         metadata:
           name: ${schema.spec.name}
           namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
     - id: configMap
       template:
         apiVersion: v1
@@ -64,6 +110,13 @@ spec:
         metadata:
           name: ${schema.spec.name}
           namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
         data: ${schema.spec.config.data}
     - id: databaseCluster
       includeWhen:
@@ -90,20 +143,38 @@ spec:
         metadata:
           name: ${schema.spec.name}
           namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
+          annotations: ${schema.spec.?runtime.?deploymentAnnotations.orValue({})}
         spec:
           replicas: ${schema.spec.replicas}
           selector:
             matchLabels:
               app.kubernetes.io/name: ${schema.spec.name}
+              app.kubernetes.io/instance: ${schema.metadata.name}
           template:
             metadata:
               labels:
                 app.kubernetes.io/name: ${schema.spec.name}
+                app.kubernetes.io/instance: ${schema.metadata.name}
+                app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+                app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+                app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+                app.kubernetes.io/managed-by: kro
+              annotations: ${schema.spec.?runtime.?podAnnotations.orValue({})}
             spec:
-              serviceAccountName: ${serviceAccount.metadata.name}
+              serviceAccountName: ${schema.spec.?runtime.?serviceAccountName.orValue(serviceAccount.metadata.name)}
+              imagePullSecrets: ${schema.spec.?runtime.?imagePullSecrets.orValue([])}
+              nodeSelector: ${schema.spec.?runtime.?nodeSelector.orValue({})}
               containers:
                 - name: app
                   image: ${schema.spec.image}
+                  imagePullPolicy: ${schema.spec.?runtime.?imagePullPolicy.orValue("IfNotPresent")}
                   ports:
                     - containerPort: ${schema.spec.port}
                       name: http
@@ -147,6 +218,13 @@ spec:
                       value: "${schema.spec.dependencies.cache.enabled ? cacheCluster.status.endpoint : ''}"
                     - name: APP_CACHE_PORT
                       value: "${schema.spec.dependencies.cache.enabled ? string(cacheCluster.status.port) : ''}"
+                  resources:
+                    requests:
+                      cpu: ${schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m")}
+                      memory: ${schema.spec.?runtime.?resources.?requests.?memory.orValue("128Mi")}
+                    limits:
+                      cpu: ${schema.spec.?runtime.?resources.?limits.?cpu.orValue("500m")}
+                      memory: ${schema.spec.?runtime.?resources.?limits.?memory.orValue("512Mi")}
     - id: service
       template:
         apiVersion: v1
@@ -154,9 +232,19 @@ spec:
         metadata:
           name: ${schema.spec.name}
           namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
+          annotations: ${schema.spec.?service.?annotations.orValue({})}
         spec:
+          type: ${schema.spec.?service.?type.orValue("ClusterIP")}
           selector:
             app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
           ports:
             - name: http
               port: ${schema.spec.port}
@@ -170,6 +258,13 @@ spec:
         metadata:
           name: ${schema.spec.name}
           namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
         spec:
           scaleTargetRef:
             apiVersion: apps/v1
@@ -193,6 +288,13 @@ spec:
         metadata:
           name: ${schema.spec.name}
           namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
         spec:
           parentRefs:
             - name: ${schema.spec.route.gatewayName}
@@ -215,6 +317,13 @@ spec:
         metadata:
           name: ${schema.spec.name}
           namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
         spec:
           refreshInterval: ${schema.spec.externalSecret.refreshInterval}
           secretStoreRef:
@@ -234,6 +343,13 @@ spec:
         metadata:
           name: ${schema.spec.name}
           namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
         spec:
           secretName: ${schema.spec.certificate.secretName}
           issuerRef:

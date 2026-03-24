@@ -10,7 +10,64 @@ common runtime wiring that would otherwise repeat across services.
 It should sit above backing-service APIs rather than force each example to
 define databases or caches inline.
 
+As of 2026-03-24, `App` is expected to grow into the main HTTP application API
+for the platform migration effort. It should absorb the repeated HTTP service
+patterns from the `cc-*` repos instead of remaining only a thin demo wrapper.
+
+The current contract direction is documented in `docs/app-v2-contract.md`.
+
+## Preferred Shape
+
+The preferred long-term `App` shape is organized around four concern buckets:
+
+- `workload`
+- `config`
+- `network`
+- `storage`
+
+This is the preferred internal structure for the `App` contract.
+It is not a recommendation to split `App` into separate top-level APIs such as
+`AppConfig`, `AppNetwork`, or `AppStorage`.
+
+## Transitional State
+
+The current RGD is transitional.
+
+It still carries older top-level fields and additive transitional blocks such as:
+
+- `runtime`
+- `service`
+- `availability`
+
+That transitional shape is acceptable while the target contract is being
+stabilized, but new design work should be evaluated against the normalized
+`workload / config / network / storage` target.
+
+## Labels
+
+`App` now stamps the recommended Kubernetes `app.kubernetes.io/*` labels across
+managed resources.
+
+Always stamped:
+
+- `app.kubernetes.io/name`
+- `app.kubernetes.io/instance`
+- `app.kubernetes.io/managed-by`
+
+Stamped from optional spec fields when provided:
+
+- `app.kubernetes.io/component`
+- `app.kubernetes.io/part-of`
+- `app.kubernetes.io/version`
+
+Stable selectors use only:
+
+- `app.kubernetes.io/name`
+- `app.kubernetes.io/instance`
+
 ## Responsibilities
+
+Current first-pass responsibilities:
 
 - `Deployment`
 - `Service`
@@ -23,12 +80,39 @@ define databases or caches inline.
 - optional `ExternalSecret`
 - optional `Certificate`
 
+Additive v2 responsibilities implemented in this repo revision:
+
+- top-level `component`
+- top-level `partOf`
+- top-level `version`
+- recommended Kubernetes app labels
+- `runtime.imagePullSecrets`
+- `runtime.imagePullPolicy`
+- `runtime.serviceAccountName`
+- `runtime.deploymentAnnotations`
+- `runtime.podAnnotations`
+- `runtime.nodeSelector`
+- `runtime.resources`
+- `service.type`
+- `service.annotations`
+
+Planned next responsibilities should be reasoned about in these buckets:
+
+- `workload`: richer runtime controls, scaling, resilience, and
+  cluster-validated models for probes and disruption budgets
+- `config`: config and secret projection patterns used repeatedly across app
+  repos, including a later explicit env/envFrom model
+- `network`: service exposure and `HTTPRoute` wiring
+- `storage`: only where the workload still fits a deployment-shaped app
+
 ## Boundaries
 
-- no `Ingress` in the first pass
+- no `Ingress`
+- no Traefik `IngressRoute`
 - no dedicated `Gateway` per app by default
 - no cluster-wide issuer or secret-store management
-- no attempt to model every app-specific setting in the first version
+- do not overload `App` to cover clearly stateful or non-HTTP workloads if a
+  separate API would be cleaner
 - backing services should usually be instantiated outside the app example
 
 ## Binding Model

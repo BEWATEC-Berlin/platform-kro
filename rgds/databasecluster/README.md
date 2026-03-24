@@ -2,22 +2,24 @@
 
 ## Scope
 
-`DatabaseCluster` is the stable database API for the PoC.
+`DatabaseCluster` is the retained PostgreSQL database API for the current
+platform migration wave.
 
 Current implementation:
 
 - PostgreSQL only
 - backed by CloudNativePG
 
-Planned direction:
+Direction:
 
-- keep the contract generic enough to support a later MariaDB-backed
-  implementation
-- do not claim multi-engine support until a second backend exists
+- keep the current status contract stable
+- grow additive PostgreSQL operational fields as needed
+- do not fold MariaDB into this API in the current wave
+- introduce a separate retained MariaDB API later if the platform needs one
 
 ## Responsibilities
 
-- create the database operator CR
+- create the PostgreSQL operator CR
 - expose stable connection outputs
 - give apps a consistent service and secret naming model
 
@@ -25,4 +27,5 @@ Planned direction:
 
 - schema migration orchestration
 - application bootstrap SQL
+- generic cross-engine abstractions before they are proven
 - backup policy abstraction beyond a small amount of input selection

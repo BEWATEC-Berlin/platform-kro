@@ -1,16 +1,21 @@
 # platform-kro
 
-`platform-kro` is the source-of-truth repo for the small KRO API surface used
-by the platform PoC.
+`platform-kro` is the source-of-truth repo for the application-facing platform
+APIs built with KRO for the platform PoC.
 
-The current scope is intentionally narrow:
+As of 2026-03-24, the repo direction is no longer to keep the API surface
+intentionally minimal. The target is a fuller application platform API layer
+that can absorb the repeated workload patterns currently expressed directly in
+the `cc-*` application repositories.
+
+The retained core API set is still:
 
 - `DatabaseCluster`
 - `CacheCluster`
 - `App`
 
-Everything else should stay on normal Kubernetes resources, Helm releases, or
-operator-native CRs until these three APIs prove their value.
+Those APIs should now evolve into migration-ready platform contracts rather
+than remain thin wrappers around a single demo slice.
 
 ## Why This Repo Exists
 
@@ -22,6 +27,7 @@ That separation is deliberate:
 - platform API work can progress without clashing with cluster bootstrap work
 - API docs and schema evolution live with the definitions
 - consumer repos stay focused on installation, operators, and environments
+- application migration can be planned against a stable API roadmap
 
 ## Repo Layout
 
@@ -29,19 +35,33 @@ That separation is deliberate:
 - `examples/`: example instances for a thin demo slice
 - `docs/`: repo-level architecture and consumer guidance
 
+Key repo-level documents:
+
+- `docs/architecture.md`: target platform direction and API boundaries
+- `docs/app-v2-contract.md`: concrete `App` v2 contract direction
+- `docs/data-service-boundaries.md`: retained backend API decisions
+- `docs/cc-kustomize-gap-analysis.md`: gap analysis against the current
+  `cc-*` kustomize repos
+
 ## Current State
 
-This is an initial scaffold.
+This repo is still an initial scaffold.
 
 - the RGDs are first-pass drafts
-- the contracts are intentionally simple
+- the current contracts do not yet cover most real workload patterns from the
+  `cc-*` repositories
 - consumer integration is expected to happen from repos such as
-  `hetzner_playground`
+  `hetzner_playground`, but the API surface must expand first
 
-The first milestone is to make the retained APIs concrete enough to consume in a
-single thin slice, not to solve every platform concern immediately.
+The next milestone is to turn the retained APIs into a platform contract that
+can absorb a meaningful subset of the existing application estate without
+relying on `Ingress`, `IngressRoute`, or `IngressRouteTCP` in the target
+application API.
 
 The intended layering is:
 
 - `DatabaseCluster` and `CacheCluster` provide backing-service contracts
-- `App` consumes those contracts as the higher application-facing abstraction
+- `App` becomes the main HTTP application-facing abstraction
+- Gateway API `HTTPRoute` is the standard exposure model for HTTP applications
+- non-HTTP exposure should be handled by dedicated future APIs rather than
+  reintroducing ingress-specific CRDs
