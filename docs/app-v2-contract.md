@@ -177,6 +177,7 @@ Candidate contents:
 - node selector
 - priority class and tolerations
 - topology spread constraints
+- restricted pod-security preset support
 - richer affinity controls
 - probes
 - autoscaling
@@ -259,6 +260,7 @@ The current transitional RGD already implements:
 - `runtime.priorityClassName`
 - `runtime.tolerations`
 - `runtime.topologySpread`
+- `runtime.restrictedSecurity`
 - `runtime.resources`
 - `service.type`
 
@@ -312,7 +314,7 @@ the expected Deployment schema. That capability remains deferred.
 These fields are still deferred to a later transitional round:
 
 - executable probe support in the RGD
-- executable pod and container `securityContext` support in the RGD
+- richer raw pod and container `securityContext` support in the RGD
 - richer affinity controls beyond the current validated topology-spread preset
 - executable `PodDisruptionBudget` support in the RGD
 - observability CRDs such as `ServiceMonitor`
@@ -329,13 +331,14 @@ object interpolation for the pod and container `securityContext` fields in the
 generated `Deployment`. Until a cluster-valid rendering pattern is proven,
 those fields stay deferred in the executable contract.
 
-A second live verification on 2026-03-24 showed the operational impact in the
-development cluster: placement controls such as `runtime.tolerations` and
-`runtime.topologySpread` render correctly, but Kyverno-enforced restricted pod
-security still blocks the workload from becoming healthy because `App` cannot
-yet express the required container `securityContext`. In clusters with an
-equivalent restricted policy baseline, `App` currently needs an exception path
-or a narrower consumer scope until security-context support is added.
+A follow-up live verification on 2026-03-24 proved a narrower model works in
+this cluster: `runtime.restrictedSecurity` now renders a fixed container
+`securityContext` preset with `allowPrivilegeEscalation: false`,
+`capabilities.drop: ["ALL"]`, `runAsNonRoot: true`, and
+`seccompProfile.type: RuntimeDefault`. That preset is intentionally narrower
+than raw Kubernetes passthrough, but it is enough to support restricted-policy
+HTTP workloads without reintroducing the KRO validation failure.
+
 
 ## Compatibility Mapping
 
@@ -359,6 +362,7 @@ mapping.
 | `runtime.priorityClassName` | `workload` | `workload.priorityClassName` |
 | `runtime.tolerations` | `workload` | `workload.tolerations` |
 | `runtime.topologySpread` | `workload` | `workload.topologySpread` |
+| `runtime.restrictedSecurity` | `workload` | `workload.restrictedSecurity` |
 | `autoscaling` | `workload` | `workload.autoscaling` |
 | `config.data` | `config` | `config.data` |
 | `config.env` | `config` | `config.env` |

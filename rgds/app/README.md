@@ -95,6 +95,7 @@ Additive v2 responsibilities implemented in this repo revision:
 - `runtime.priorityClassName`
 - `runtime.tolerations`
 - `runtime.topologySpread`
+- `runtime.restrictedSecurity`
 - `runtime.resources`
 - `service.type`
 - `service.annotations`
@@ -144,7 +145,8 @@ compatible with the expected Deployment env schema.
 
 `runtime.priorityClassName`, `runtime.tolerations`, and
 `runtime.topologySpread` give `App` a first usable placement story for HTTP
-workloads.
+workloads. `runtime.restrictedSecurity` adds a first cluster-validated
+restricted-pod-security preset for workloads that can run non-root.
 
 `runtime.topologySpread` is a validated generated preset rather than a full raw
 Kubernetes `topologySpreadConstraints` passthrough. Full affinity-style
@@ -154,15 +156,21 @@ Whole-object pod and container `securityContext` support is intentionally not
 in the executable `App` contract yet. A live KRO validation pass on 2026-03-24
 rejected the attempted optional-object interpolation for the generated
 `Deployment` security-context fields, which left the `App`
-`ResourceGraphDefinition` inactive. That capability remains deferred until a
-cluster-valid rendering pattern is proven.
+`ResourceGraphDefinition` inactive. That richer passthrough capability remains
+deferred until a cluster-valid rendering pattern is proven.
 
-In the development cluster, that limitation is operationally visible: a live
-placement test on 2026-03-24 showed that `runtime.tolerations` and
-`runtime.topologySpread` render into the generated `Deployment`, but the pod
-still violates the cluster's restricted Kyverno policy because `App` cannot yet
-set the required container `securityContext`. Consumers should treat restricted
-pod-security compliance as a current gap in the `App` contract.
+`runtime.restrictedSecurity` is the narrower supported path. When enabled, it
+renders a fixed container `securityContext` with:
+
+- `allowPrivilegeEscalation: false`
+- `capabilities.drop: ["ALL"]`
+- `runAsNonRoot: true`
+- `seccompProfile.type: RuntimeDefault`
+- optional `readOnlyRootFilesystem` from the App spec
+
+This was verified live on 2026-03-24 in the development cluster with a
+non-root image. It satisfies the restricted Kyverno policy that previously
+blocked the test workload.
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can

@@ -1,0 +1,28 @@
+apiVersion: platform.connectedcare.io/v1alpha1
+kind: App
+metadata:
+  name: restricted-nginx
+  namespace: platform-kro-restricted
+spec:
+  name: restricted-nginx
+  namespace: platform-kro-restricted
+  component: web
+  partOf: platform-kro
+  version: stable
+  image: nginxinc/nginx-unprivileged:stable-alpine-slim
+  port: 8080
+  replicas: 1
+  config:
+    revision: restricted-1
+  runtime:
+    restrictedSecurity:
+      enabled: true
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 64Mi
+  service:
+    type: ClusterIP

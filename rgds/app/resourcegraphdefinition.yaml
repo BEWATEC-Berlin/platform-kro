@@ -50,6 +50,9 @@ spec:
         topologyKey: string | default="kubernetes.io/hostname"
         maxSkew: integer | default=1
         whenUnsatisfiable: string | default="ScheduleAnyway"
+      RestrictedSecurityConfig:
+        enabled: boolean | default=false
+        readOnlyRootFilesystem: boolean | default=false
       RuntimeConfig:
         imagePullSecrets: "[]LocalObjectReference"
         imagePullPolicy: string | default="IfNotPresent"
@@ -60,6 +63,7 @@ spec:
         priorityClassName: string
         tolerations: "[]Toleration"
         topologySpread: TopologySpreadConfig
+        restrictedSecurity: RestrictedSecurityConfig
         resources: ResourceRequirements
       ServiceConfig:
         type: string | default="ClusterIP"
@@ -240,6 +244,22 @@ spec:
                   envFrom:
                     - configMapRef:
                         name: ${configMap.metadata.name}
+                  securityContext: >-
+                    ${
+                      schema.spec.?runtime.?restrictedSecurity.?enabled.orValue(false)
+                      ? {
+                          "allowPrivilegeEscalation": false,
+                          "capabilities": {
+                            "drop": ["ALL"]
+                          },
+                          "runAsNonRoot": true,
+                          "readOnlyRootFilesystem": schema.spec.?runtime.?restrictedSecurity.?readOnlyRootFilesystem.orValue(false),
+                          "seccompProfile": {
+                            "type": "RuntimeDefault"
+                          }
+                        }
+                      : {}
+                    }
                   resources:
                     requests:
                       cpu: ${schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m")}

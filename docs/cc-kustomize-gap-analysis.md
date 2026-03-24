@@ -88,7 +88,7 @@ The current `App` contract still leaves several repeated workload concerns
 outside the executable platform API:
 
 - liveness and readiness probes
-- pod and container security context
+- richer pod and container security context support beyond the current restricted preset
 - richer pod placement controls such as full affinity policies beyond the current validated spread preset
 - optional disruption budgets
 - optional observability bindings

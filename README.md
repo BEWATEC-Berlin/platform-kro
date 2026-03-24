@@ -55,6 +55,7 @@ Start here when evaluating or consuming the platform APIs:
   `cc-*` estate
 - `examples/otmicro-currency-spike/README.md`: concrete migration spike and
   overlay pattern
+- `examples/restricted-nginx-spike/README.md`: restricted-policy `App` example
 
 ## Change Process
 
