@@ -294,13 +294,15 @@ spec:
                         "readOnly": false
                       }
                     }]
-                  : [{
+                  : schema.spec.?config.?env.orValue([])
+                    .filter(envVar, false)
+                    .map(envVar, {
                       "name": "data",
                       "persistentVolumeClaim": {
                         "claimName": "unused",
                         "readOnly": false
                       }
-                    }].filter(volume, false)
+                    })
                 }
               containers:
                 - name: app
@@ -372,11 +374,13 @@ spec:
                           "mountPath": schema.spec.?storage.?mountPath.orValue("/data"),
                           "readOnly": false
                         }]
-                      : [{
+                      : schema.spec.?config.?env.orValue([])
+                        .filter(envVar, false)
+                        .map(envVar, {
                           "name": "data",
                           "mountPath": "/data",
                           "readOnly": false
-                        }].filter(volumeMount, false)
+                        })
                     }
                   resources:
                     requests:
