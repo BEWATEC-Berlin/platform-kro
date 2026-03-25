@@ -15,6 +15,13 @@ for the platform migration effort. It should absorb the repeated HTTP service
 patterns from the `cc-*` repos instead of remaining only a thin demo wrapper.
 
 The current contract direction is documented in `docs/app-v2-contract.md`.
+User-facing guides for actual usage live in:
+
+- `docs/app-user-guide.md`
+- `docs/app-config-and-secrets.md`
+- `docs/app-migration-cookbook.md`
+- `docs/cc-epg-service-mapping.md`
+- `docs/wave-planning.md`
 
 ## Preferred Shape
 

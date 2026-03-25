@@ -39,6 +39,12 @@ Key repo-level documents:
 
 - `docs/architecture.md`: target platform direction and API boundaries
 - `docs/app-v2-contract.md`: concrete `App` v2 contract direction
+- `docs/app-user-guide.md`: user-facing `App` usage guide
+- `docs/app-config-and-secrets.md`: config, secret, and rollout model
+- `docs/app-migration-cookbook.md`: step-by-step migration approach
+- `docs/wave-planning.md`: Wave 1 exit criteria and Wave 2 entry criteria
+- `docs/app-contract-cleanup.md`: transitional contract cleanup direction
+- `docs/cc-epg-service-mapping.md`: first paper migration template
 - `docs/data-service-boundaries.md`: retained backend API decisions
 - `docs/cc-kustomize-gap-analysis.md`: gap analysis against the current
   `cc-*` kustomize repos
@@ -50,7 +56,12 @@ Start here when evaluating or consuming the platform APIs:
 - `rgds/app/README.md`: user-facing `App` API guide
 - `rgds/databasecluster/README.md`: user-facing `DatabaseCluster` API guide
 - `rgds/cachecluster/README.md`: user-facing `CacheCluster` API guide
+- `docs/app-user-guide.md`: how to model an HTTP app with `App`
+- `docs/app-config-and-secrets.md`: how config and secret projection works
+- `docs/app-migration-cookbook.md`: how to migrate from existing Kustomize
+- `docs/cc-epg-service-mapping.md`: first paper migration example
 - `docs/app-v2-contract.md`: target `App` contract and validated limitations
+- `docs/wave-planning.md`: migration wave criteria and current status
 - `docs/cc-kustomize-gap-analysis.md`: migration-gap view against the current
   `cc-*` estate
 - `examples/otmicro-currency-spike/README.md`: concrete migration spike and
