@@ -221,8 +221,10 @@ Candidate contents:
 
 - PVC-backed mounts for application data where the workload still fits a
   deployment-shaped API
-- access mode controls and explicit documentation that the first Wave 1 path
-  relies on the cluster default `StorageClass`
+- access mode, explicit `className`, and explicit `volumeMode` controls for the
+  validated Wave 1 PVC path
+- explicit documentation that older storage-enabled `App` instances created
+  before the single-deployment graph change may need recreation
 
 This bucket should not be stretched to cover a clearly stateful application
 contract. That is where `StatefulApp` should begin.
@@ -272,6 +274,8 @@ The current transitional RGD already implements:
 - `serviceMonitor.interval`
 - `storage.mountPath`
 - `storage.size`
+- `storage.className`
+- `storage.volumeMode`
 - `disruptionBudget.maxUnavailableCount`
 
 ### Implemented In This Next Transitional Round
@@ -390,7 +394,7 @@ mapping.
 | `service.type` | `network` | `network.service.type` |
 | `service.annotations` | `network` | `network.service.annotations` |
 | `serviceMonitor` | `workload` | `workload.observability.serviceMonitor` |
-| `storage` | `storage` | `storage.persistentVolume` |
+| `storage` | `storage` | `storage.persistentVolume` with explicit class and mode |
 | `disruptionBudget` | `workload` | `workload.disruptionBudget` |
 | `route` | `network` | `network.httpRoute` |
 | `certificate` | `network` | `network.certificate` |

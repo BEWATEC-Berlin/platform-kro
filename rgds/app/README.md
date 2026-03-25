@@ -105,6 +105,8 @@ Additive v2 responsibilities implemented in this repo revision:
 - `serviceMonitor.interval`
 - `storage.mountPath`
 - `storage.size`
+- `storage.className`
+- `storage.volumeMode`
 - `disruptionBudget.maxUnavailableCount`
 
 Planned next responsibilities should be reasoned about in these buckets:
@@ -200,15 +202,21 @@ intentionally stays narrow and exposes only `path`, `interval`, and
 
 `storage` is the current deployment-shaped persistence path. It creates one
 optional `PersistentVolumeClaim` and mounts it into the application container.
-The current contract intentionally stays narrow and exposes only `size`,
-`mountPath`, and one `accessMode`. It does not expose `storageClassName`; the
-created claim relies on the cluster default `StorageClass`.
+The current contract intentionally stays narrow and exposes `size`,
+`mountPath`, one `accessMode`, explicit `className`, and explicit `volumeMode`.
+
+The validated path in the development cluster uses an explicit storage class
+selection instead of relying on admission defaulting. That matters because the
+default storage-class admission plugin mutates the claim spec, which leaves the
+`App` stuck in `ResourcesReady=False` with `cluster mutated`.
 
 This is enough for the first Wave 1 PVC case, but it is not yet a general
 volume model. Existing claims, multiple mounts, secret volumes, and empty-dir
 patterns remain outside the current `App` contract. The main operational
-failure modes are a cluster with no default `StorageClass` and container images
-that cannot write to the mounted path without extra ownership handling.
+failure modes are a missing or wrong `storage.className`, container images that
+cannot write to the mounted path without extra ownership handling, and stale
+`App` instances created before the single-deployment graph change. Those older
+instances may need to be recreated so KRO can manage a clean resource graph.
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can

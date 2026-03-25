@@ -14,15 +14,17 @@ Kyverno policy.
 - generated `PodDisruptionBudget` for the `App` pods
 - generated `ServiceMonitor` for the same service labels and `http` port
 - merged env-from projection from the generated app config map, one referenced config map, and one referenced secret
-- generated `PersistentVolumeClaim` mounted into the container at `/data`
+- generated `PersistentVolumeClaim` mounted into the container at `/data` with
+  explicit storage class and volume mode
 - deployment availability in the development cluster without a policy exception
 
 ## Operational Notes
 
-This narrow storage example depends on a default `StorageClass` in the cluster.
-It also assumes the image can write to `/data` without extra ownership or
-`fsGroup` handling. Those concerns are still outside the current `App`
-contract.
+This narrow storage example uses explicit `storage.className` and
+`storage.volumeMode` values so the generated PVC is not mutated by defaulting
+in the cluster. It also assumes the image can write to `/data` without extra
+ownership or `fsGroup` handling. Those concerns are still outside the current
+`App` contract.
 
 ## Render Command
 
