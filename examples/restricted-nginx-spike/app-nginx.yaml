@@ -45,6 +45,8 @@ spec:
     size: 1Gi
     mountPath: /data
     accessMode: ReadWriteOnce
+    className: hcloud-volumes
+    volumeMode: Filesystem
   serviceMonitor:
     enabled: true
     path: /
