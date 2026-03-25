@@ -284,155 +284,67 @@ spec:
                     }]
                   : []
                 }
-              containers:
-                - name: app
-                  image: ${schema.spec.image}
-                  imagePullPolicy: ${schema.spec.?runtime.?imagePullPolicy.orValue("IfNotPresent")}
-                  ports:
-                    - containerPort: ${schema.spec.port}
-                      name: http
-                  env: ${schema.spec.?config.?env.orValue([])}
-                  envFrom: >-
-                    ${
-                      [{"prefix": "", "configMapRef": {"name": configMap.metadata.name, "optional": false}}]
-                      + schema.spec.?config.?envFromConfigMaps.orValue([]).map(cm, {"prefix": "", "configMapRef": {"name": cm.name, "optional": false}})
-                      + schema.spec.?config.?envFromSecrets.orValue([]).map(secretRef, {"prefix": "", "secretRef": {"name": secretRef.name, "optional": false}})
+              volumes: >-
+                ${
+                  [{
+                    "name": "data",
+                    "persistentVolumeClaim": {
+                      "claimName": schema.spec.?storage.?enabled.orValue(false) ? persistentVolumeClaim.metadata.name : "unused",
+                      "readOnly": false
                     }
-                  resources:
-                    requests:
-                      cpu: ${schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m")}
-                      memory: ${schema.spec.?runtime.?resources.?requests.?memory.orValue("128Mi")}
-                    limits:
-                      cpu: ${schema.spec.?runtime.?resources.?limits.?cpu.orValue("500m")}
-                      memory: ${schema.spec.?runtime.?resources.?limits.?memory.orValue("512Mi")}
-    - id: deploymentRestrictedSecurity
-      includeWhen:
-        - ${schema.spec.?runtime.?restrictedSecurity.?enabled.orValue(false)}
-      template:
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: ${schema.spec.name}
-          namespace: ${schema.spec.namespace}
-        spec:
-          selector:
-            matchLabels:
-              app.kubernetes.io/name: ${schema.spec.name}
-              app.kubernetes.io/instance: ${schema.metadata.name}
-          template:
-            metadata:
-              labels:
-                app.kubernetes.io/name: ${schema.spec.name}
-                app.kubernetes.io/instance: ${schema.metadata.name}
-            spec:
-              containers:
-                - name: app
-                  image: ${schema.spec.image}
-                  securityContext:
-                    allowPrivilegeEscalation: false
-                    capabilities:
-                      drop:
-                        - ALL
-                    runAsNonRoot: true
-                    readOnlyRootFilesystem: ${schema.spec.?runtime.?restrictedSecurity.?readOnlyRootFilesystem.orValue(false)}
-                    seccompProfile:
-                      type: RuntimeDefault
-    - id: deploymentReadinessProbe
-      includeWhen:
-        - ${schema.spec.?runtime.?readinessProbe.?enabled.orValue(false)}
-      template:
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: ${schema.spec.name}
-          namespace: ${schema.spec.namespace}
-        spec:
-          selector:
-            matchLabels:
-              app.kubernetes.io/name: ${schema.spec.name}
-              app.kubernetes.io/instance: ${schema.metadata.name}
-          template:
-            metadata:
-              labels:
-                app.kubernetes.io/name: ${schema.spec.name}
-                app.kubernetes.io/instance: ${schema.metadata.name}
-            spec:
-              containers:
-                - name: app
-                  image: ${schema.spec.image}
-                  readinessProbe:
-                    httpGet:
-                      path: ${schema.spec.?runtime.?readinessProbe.?path.orValue("/")}
-                      port: http
-                    initialDelaySeconds: ${schema.spec.?runtime.?readinessProbe.?initialDelaySeconds.orValue(0)}
-                    periodSeconds: ${schema.spec.?runtime.?readinessProbe.?periodSeconds.orValue(10)}
-                    timeoutSeconds: ${schema.spec.?runtime.?readinessProbe.?timeoutSeconds.orValue(1)}
-                    successThreshold: ${schema.spec.?runtime.?readinessProbe.?successThreshold.orValue(1)}
-                    failureThreshold: ${schema.spec.?runtime.?readinessProbe.?failureThreshold.orValue(3)}
-    - id: deploymentLivenessProbe
-      includeWhen:
-        - ${schema.spec.?runtime.?livenessProbe.?enabled.orValue(false)}
-      template:
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: ${schema.spec.name}
-          namespace: ${schema.spec.namespace}
-        spec:
-          selector:
-            matchLabels:
-              app.kubernetes.io/name: ${schema.spec.name}
-              app.kubernetes.io/instance: ${schema.metadata.name}
-          template:
-            metadata:
-              labels:
-                app.kubernetes.io/name: ${schema.spec.name}
-                app.kubernetes.io/instance: ${schema.metadata.name}
-            spec:
-              containers:
-                - name: app
-                  image: ${schema.spec.image}
-                  livenessProbe:
-                    httpGet:
-                      path: ${schema.spec.?runtime.?livenessProbe.?path.orValue("/")}
-                      port: http
-                    initialDelaySeconds: ${schema.spec.?runtime.?livenessProbe.?initialDelaySeconds.orValue(0)}
-                    periodSeconds: ${schema.spec.?runtime.?livenessProbe.?periodSeconds.orValue(10)}
-                    timeoutSeconds: ${schema.spec.?runtime.?livenessProbe.?timeoutSeconds.orValue(1)}
-                    successThreshold: ${schema.spec.?runtime.?livenessProbe.?successThreshold.orValue(1)}
-                    failureThreshold: ${schema.spec.?runtime.?livenessProbe.?failureThreshold.orValue(3)}
-    - id: deploymentStorage
-      includeWhen:
-        - ${schema.spec.?storage.?enabled.orValue(false)}
-      template:
-        apiVersion: apps/v1
-        kind: Deployment
-        metadata:
-          name: ${schema.spec.name}
-          namespace: ${schema.spec.namespace}
-        spec:
-          selector:
-            matchLabels:
-              app.kubernetes.io/name: ${schema.spec.name}
-              app.kubernetes.io/instance: ${schema.metadata.name}
-          template:
-            metadata:
-              labels:
-                app.kubernetes.io/name: ${schema.spec.name}
-                app.kubernetes.io/instance: ${schema.metadata.name}
-            spec:
-              volumes:
-                - name: data
-                  persistentVolumeClaim:
-                    claimName: ${persistentVolumeClaim.metadata.name}
-                    readOnly: false
-              containers:
-                - name: app
-                  image: ${schema.spec.image}
-                  volumeMounts:
-                    - name: data
-                      mountPath: ${schema.spec.?storage.?mountPath.orValue("/data")}
-                      readOnly: false
+                  }].filter(volume, schema.spec.?storage.?enabled.orValue(false))
+                }
+              containers: >-
+                ${[
+                  [
+                    {"enabled": true, "entry": {"name": "app"}},
+                    {"enabled": true, "entry": {"image": schema.spec.image}},
+                    {"enabled": true, "entry": {"imagePullPolicy": schema.spec.?runtime.?imagePullPolicy.orValue("IfNotPresent")}},
+                    {"enabled": true, "entry": {"ports": [{"containerPort": schema.spec.port, "name": "http"}]}},
+                    {"enabled": true, "entry": {"env": schema.spec.?config.?env.orValue([])}},
+                    {"enabled": true, "entry": {"envFrom": [{"prefix": "", "configMapRef": {"name": configMap.metadata.name, "optional": false}}]
+                      + schema.spec.?config.?envFromConfigMaps.orValue([]).map(cm, {"prefix": "", "configMapRef": {"name": cm.name, "optional": false}})
+                      + schema.spec.?config.?envFromSecrets.orValue([]).map(secretRef, {"prefix": "", "secretRef": {"name": secretRef.name, "optional": false}})}},
+                    {"enabled": schema.spec.?runtime.?restrictedSecurity.?enabled.orValue(false), "entry": {"securityContext": {
+                      "allowPrivilegeEscalation": false,
+                      "capabilities": {"drop": ["ALL"]},
+                      "runAsNonRoot": true,
+                      "readOnlyRootFilesystem": schema.spec.?runtime.?restrictedSecurity.?readOnlyRootFilesystem.orValue(false),
+                      "seccompProfile": {"type": "RuntimeDefault"}
+                    }}},
+                    {"enabled": schema.spec.?runtime.?readinessProbe.?enabled.orValue(false), "entry": {"readinessProbe": {
+                      "httpGet": {"path": schema.spec.?runtime.?readinessProbe.?path.orValue("/"), "port": "http"},
+                      "initialDelaySeconds": schema.spec.?runtime.?readinessProbe.?initialDelaySeconds.orValue(0),
+                      "periodSeconds": schema.spec.?runtime.?readinessProbe.?periodSeconds.orValue(10),
+                      "timeoutSeconds": schema.spec.?runtime.?readinessProbe.?timeoutSeconds.orValue(1),
+                      "successThreshold": schema.spec.?runtime.?readinessProbe.?successThreshold.orValue(1),
+                      "failureThreshold": schema.spec.?runtime.?readinessProbe.?failureThreshold.orValue(3)
+                    }}},
+                    {"enabled": schema.spec.?runtime.?livenessProbe.?enabled.orValue(false), "entry": {"livenessProbe": {
+                      "httpGet": {"path": schema.spec.?runtime.?livenessProbe.?path.orValue("/"), "port": "http"},
+                      "initialDelaySeconds": schema.spec.?runtime.?livenessProbe.?initialDelaySeconds.orValue(0),
+                      "periodSeconds": schema.spec.?runtime.?livenessProbe.?periodSeconds.orValue(10),
+                      "timeoutSeconds": schema.spec.?runtime.?livenessProbe.?timeoutSeconds.orValue(1),
+                      "successThreshold": schema.spec.?runtime.?livenessProbe.?successThreshold.orValue(1),
+                      "failureThreshold": schema.spec.?runtime.?livenessProbe.?failureThreshold.orValue(3)
+                    }}},
+                    {"enabled": schema.spec.?storage.?enabled.orValue(false), "entry": {"volumeMounts": [{
+                      "name": "data",
+                      "mountPath": schema.spec.?storage.?mountPath.orValue("/data"),
+                      "readOnly": false
+                    }]}} ,
+                    {"enabled": true, "entry": {"resources": {
+                      "requests": {
+                        "cpu": schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m"),
+                        "memory": schema.spec.?runtime.?resources.?requests.?memory.orValue("128Mi")
+                      },
+                      "limits": {
+                        "cpu": schema.spec.?runtime.?resources.?limits.?cpu.orValue("500m"),
+                        "memory": schema.spec.?runtime.?resources.?limits.?memory.orValue("512Mi")
+                      }
+                    }}}
+                  ].filter(item, item.enabled).transformMapEntry(i, item, item.entry)
+                ]}
     - id: service
       template:
         apiVersion: v1
