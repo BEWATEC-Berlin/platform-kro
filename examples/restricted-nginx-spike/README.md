@@ -14,6 +14,7 @@ Kyverno policy.
 - generated `PodDisruptionBudget` for the `App` pods
 - generated `ServiceMonitor` for the same service labels and `http` port
 - merged env-from projection from the generated app config map, one referenced config map, and one referenced secret
+- generated `PersistentVolumeClaim` mounted into the container at `/data`
 - deployment availability in the development cluster without a policy exception
 
 ## Render Command

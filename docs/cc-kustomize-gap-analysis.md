@@ -91,7 +91,7 @@ outside the executable platform API:
 - richer pod and container security context support beyond the current restricted preset
 - richer pod placement controls such as full affinity policies beyond the current validated spread preset
 - broader observability bindings beyond the current `ServiceMonitor` path
-- optional PVC attachments for deployment-shaped workloads
+- broader storage patterns beyond the current single generated PVC mount
 - broader secret and config composition beyond the current `config.data`, explicit `config.env`, and explicit config-map/secret `envFrom` refs
 
 Without those features, most HTTP services still need large raw deployment
@@ -157,7 +157,7 @@ The platform needs an explicit position on:
 
 | Repo | Current profile | Fit with current APIs | Main gaps before migration |
 | --- | --- | --- | --- |
-| `cc-accounting-middleware` | Simple HTTP service with PVC, `ExternalSecret`, `IngressRoute` | Low to medium | `App` needs PVC attachments, richer runtime options, and `HTTPRoute` migration |
+| `cc-accounting-middleware` | Simple HTTP service with PVC, `ExternalSecret`, `IngressRoute` | Medium | `App` now needs validation against the actual storage and secret shape plus `HTTPRoute` migration |
 | `cc-backend-api` | HTTP service with PostgreSQL, `ExternalSecret`, `CronJob`, PDB, backups | Low | `App` needs richer deployment controls; platform needs clear PostgreSQL backup model and recurring task story |
 | `cc-e2e-identity-management` | Namespace plus `CronJob` overlays | Low | likely needs a dedicated `ScheduledTask`-style API rather than `App` |
 | `cc-epg-service` | HTTP service with `ExternalSecret`, monitoring, PDB | Medium | `App` needs `HTTPRoute` migration and validation against the actual monitoring shape |

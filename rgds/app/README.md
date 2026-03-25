@@ -103,6 +103,8 @@ Additive v2 responsibilities implemented in this repo revision:
 - `service.annotations`
 - `serviceMonitor.path`
 - `serviceMonitor.interval`
+- `storage.mountPath`
+- `storage.size`
 - `disruptionBudget.maxUnavailableCount`
 
 Planned next responsibilities should be reasoned about in these buckets:
@@ -195,6 +197,15 @@ contract intentionally stays narrow and exposes only integer `maxUnavailableCoun
 the same stable labels and scrapes the named `http` port. The current contract
 intentionally stays narrow and exposes only `path`, `interval`, and
 `scrapeTimeout`.
+
+`storage` is the current deployment-shaped persistence path. It creates one
+optional `PersistentVolumeClaim` and mounts it into the application container.
+The current contract intentionally stays narrow and exposes only `size`,
+`mountPath`, and one `accessMode`, relying on the cluster default storage class.
+
+This is enough for the first Wave 1 PVC case, but it is not yet a general
+volume model. Existing claims, multiple mounts, secret volumes, and empty-dir
+patterns remain outside the current `App` contract.
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can

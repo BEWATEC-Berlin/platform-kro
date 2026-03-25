@@ -70,6 +70,11 @@ spec:
         path: string | default="/metrics"
         interval: string | default="30s"
         scrapeTimeout: string | default="10s"
+      PersistentStorageConfig:
+        enabled: boolean | default=false
+        size: string | default="1Gi"
+        mountPath: string | default="/data"
+        accessMode: string | default="ReadWriteOnce"
       RuntimeConfig:
         imagePullSecrets: "[]LocalObjectReference"
         imagePullPolicy: string | default="IfNotPresent"
@@ -111,6 +116,7 @@ spec:
         envFromSecrets: "[]LocalObjectReference"
       runtime: RuntimeConfig
       service: ServiceConfig
+      storage: PersistentStorageConfig
       serviceMonitor: ServiceMonitorConfig
       disruptionBudget: DisruptionBudgetConfig
       autoscaling:
@@ -202,6 +208,28 @@ spec:
         metadata:
           name: ${schema.spec.dependencies.cache.cacheClusterName}
           namespace: ${schema.spec.namespace}
+    - id: persistentVolumeClaim
+      includeWhen:
+        - ${schema.spec.?storage.?enabled.orValue(false)}
+      template:
+        apiVersion: v1
+        kind: PersistentVolumeClaim
+        metadata:
+          name: ${schema.spec.name}-data
+          namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
+        spec:
+          accessModes:
+            - ${schema.spec.?storage.?accessMode.orValue("ReadWriteOnce")}
+          resources:
+            requests:
+              storage: ${schema.spec.?storage.?size.orValue("1Gi")}
     - id: deployment
       template:
         apiVersion: apps/v1
@@ -252,6 +280,17 @@ spec:
                           "app.kubernetes.io/name": schema.spec.name,
                           "app.kubernetes.io/instance": schema.metadata.name
                         }
+                      }
+                    }]
+                  : []
+                }
+              volumes: >-
+                ${
+                  schema.spec.?storage.?enabled.orValue(false)
+                  ? [{
+                      "name": "data",
+                      "persistentVolumeClaim": {
+                        "claimName": persistentVolumeClaim.metadata.name
                       }
                     }]
                   : []
@@ -317,6 +356,15 @@ spec:
                           }
                         }
                       : {}
+                    }
+                  volumeMounts: >-
+                    ${
+                      schema.spec.?storage.?enabled.orValue(false)
+                      ? [{
+                          "name": "data",
+                          "mountPath": schema.spec.?storage.?mountPath.orValue("/data")
+                        }]
+                      : []
                     }
                   resources:
                     requests:

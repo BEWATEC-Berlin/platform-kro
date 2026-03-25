@@ -40,6 +40,11 @@ spec:
         memory: 64Mi
   service:
     type: ClusterIP
+  storage:
+    enabled: true
+    size: 1Gi
+    mountPath: /data
+    accessMode: ReadWriteOnce
   serviceMonitor:
     enabled: true
     path: /

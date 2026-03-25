@@ -269,6 +269,8 @@ The current transitional RGD already implements:
 - `service.type`
 - `serviceMonitor.path`
 - `serviceMonitor.interval`
+- `storage.mountPath`
+- `storage.size`
 - `disruptionBudget.maxUnavailableCount`
 
 ### Implemented In This Next Transitional Round
@@ -328,7 +330,7 @@ These fields are still deferred to a later transitional round:
 - richer affinity controls beyond the current validated topology-spread preset
 - richer `PodDisruptionBudget` support such as `minAvailable`, percent-based compatibility handling, or policy presets
 - broader observability CRDs and policy beyond the current `ServiceMonitor` path
-- deployment-shaped persistence
+- broader deployment-shaped persistence beyond one generated PVC mount
 
 They remain deferred because they add external CRD coupling, require cleaner
 merge semantics with the current generated environment wiring, still need a
@@ -387,6 +389,7 @@ mapping.
 | `service.type` | `network` | `network.service.type` |
 | `service.annotations` | `network` | `network.service.annotations` |
 | `serviceMonitor` | `workload` | `workload.observability.serviceMonitor` |
+| `storage` | `storage` | `storage.persistentVolume` |
 | `disruptionBudget` | `workload` | `workload.disruptionBudget` |
 | `route` | `network` | `network.httpRoute` |
 | `certificate` | `network` | `network.certificate` |
