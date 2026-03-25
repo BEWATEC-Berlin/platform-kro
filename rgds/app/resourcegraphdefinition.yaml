@@ -290,10 +290,17 @@ spec:
                   ? [{
                       "name": "data",
                       "persistentVolumeClaim": {
-                        "claimName": persistentVolumeClaim.metadata.name
+                        "claimName": persistentVolumeClaim.metadata.name,
+                        "readOnly": false
                       }
                     }]
-                  : []
+                  : [{
+                      "name": "data",
+                      "persistentVolumeClaim": {
+                        "claimName": "unused",
+                        "readOnly": false
+                      }
+                    }].filter(volume, false)
                 }
               containers:
                 - name: app
@@ -365,7 +372,11 @@ spec:
                           "mountPath": schema.spec.?storage.?mountPath.orValue("/data"),
                           "readOnly": false
                         }]
-                      : []
+                      : [{
+                          "name": "data",
+                          "mountPath": "/data",
+                          "readOnly": false
+                        }].filter(volumeMount, false)
                     }
                   resources:
                     requests:
