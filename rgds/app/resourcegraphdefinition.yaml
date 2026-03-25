@@ -227,8 +227,6 @@ spec:
             requests:
               storage: ${schema.spec.?storage.?size.orValue("1Gi")}
     - id: deployment
-      includeWhen:
-        - ${!schema.spec.?storage.?enabled.orValue(false)}
       template:
         apiVersion: apps/v1
         kind: Deployment
