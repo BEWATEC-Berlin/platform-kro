@@ -327,6 +327,7 @@ spec:
             spec:
               containers:
                 - name: app
+                  image: ${schema.spec.image}
                   securityContext:
                     allowPrivilegeEscalation: false
                     capabilities:
@@ -358,6 +359,7 @@ spec:
             spec:
               containers:
                 - name: app
+                  image: ${schema.spec.image}
                   readinessProbe:
                     httpGet:
                       path: ${schema.spec.?runtime.?readinessProbe.?path.orValue("/")}
@@ -389,6 +391,7 @@ spec:
             spec:
               containers:
                 - name: app
+                  image: ${schema.spec.image}
                   livenessProbe:
                     httpGet:
                       path: ${schema.spec.?runtime.?livenessProbe.?path.orValue("/")}
@@ -425,6 +428,7 @@ spec:
                     readOnly: false
               containers:
                 - name: app
+                  image: ${schema.spec.image}
                   volumeMounts:
                     - name: data
                       mountPath: ${schema.spec.?storage.?mountPath.orValue("/data")}
