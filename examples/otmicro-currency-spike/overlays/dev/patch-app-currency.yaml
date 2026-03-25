@@ -2,10 +2,25 @@ apiVersion: platform.connectedcare.io/v1alpha1
 kind: App
 metadata:
   name: currency
+  namespace: platform-kro-currency
 spec:
   config:
-    revision: dev-2026-03-24-1
-    data:
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector.observability.svc.cluster.local:4317
-      VERSION: "2.1.4-dev"
-      OTEL_RESOURCE_ATTRIBUTES: service.name=currency,service.namespace=platform-kro-currency,service.version=2.1.4-dev
+    revision: dev-2026-03-25-1
+    env:
+      - name: OTEL_SERVICE_NAME
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.labels['app.kubernetes.io/component']
+      - name: OTEL_COLLECTOR_NAME
+        value: otel-collector
+      - name: OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE
+        value: cumulative
+      - name: CURRENCY_PORT
+        value: "8080"
+      - name: OTEL_EXPORTER_OTLP_ENDPOINT
+        value: http://otel-collector.observability.svc.cluster.local:4317
+      - name: VERSION
+        value: "2.1.4-dev"
+      - name: OTEL_RESOURCE_ATTRIBUTES
+        value: service.name=$(OTEL_SERVICE_NAME),service.namespace=platform-kro-currency,service.version=2.1.4-dev

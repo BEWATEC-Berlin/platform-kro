@@ -9,31 +9,29 @@ remaining gaps without forcing the contract to over-claim.
 
 ## What This Example Verifies
 
-- namespace creation
-- `App` instance creation
+- namespace creation through the base kustomization
+- `App` instance creation under `platform.connectedcare.io/v1alpha1`
 - generated `ServiceAccount`
 - generated `ConfigMap`
 - generated `Deployment`
 - generated `Service`
-- deployment availability in a live cluster
+- deployment availability in the development cluster
 
 ## Important Adaptation
 
 The source deployment uses explicit env entries, including a `fieldRef` for
 `OTEL_SERVICE_NAME`.
 
-The current `App` API now supports explicit `config.env`, so this example
-models the source deployment environment more directly. The `OTEL_SERVICE_NAME`
-field-ref is represented through `valueFrom.fieldRef`, while the remaining
-static values stay as explicit literal env entries.
+This spike keeps those runtime values in `spec.config.env`, because that is the
+closest current `App` mapping for this workload. The example does not use the
+restricted security preset, because the source image still runs as root.
 
-The generated `ConfigMap` path is still available through `config.data`, but it
-is no longer required just to express normal container environment variables.
+The source service also does not speak normal HTTP on port `8080`, so the spike
+keeps readiness and liveness probes disabled. The current `App` HTTP probe
+contract remains useful for HTTP workloads, but it is not the right fit for
+this service.
 
 ## Overlay Pattern
-
-`spec.config.data` is easy to override in normal Kustomize overlays because it is
-just ordinary YAML on the `App` resource.
 
 This example includes a reusable base in [base/kustomization.yaml](/Users/francesco/repos/bewatec/platform-kro/examples/otmicro-currency-spike/base/kustomization.yaml#L1)
 and an overlay in [overlays/dev/kustomization.yaml](/Users/francesco/repos/bewatec/platform-kro/examples/otmicro-currency-spike/overlays/dev/kustomization.yaml#L1)
@@ -41,7 +39,7 @@ with a patch in [overlays/dev/patch-app-currency.yaml](/Users/francesco/repos/be
 
 That overlay does two things:
 
-- patches `spec.config.data` with environment-specific values
+- patches `spec.config.env` with environment-specific runtime values
 - bumps `spec.config.revision` to force a rollout when those config changes must
   restart pods
 
