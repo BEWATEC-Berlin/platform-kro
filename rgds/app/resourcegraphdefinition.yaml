@@ -146,7 +146,8 @@ spec:
     status:
       serviceName: ${service.metadata.name}
       serviceType: ${service.spec.type}
-      availableReplicas: ${deployment.status.availableReplicas}
+      availableReplicas: >-
+        ${schema.spec.?storage.?enabled.orValue(false) ? deploymentWithStorage.status.availableReplicas : deployment.status.availableReplicas}
     additionalPrinterColumns:
       - name: Service
         type: string
@@ -231,6 +232,8 @@ spec:
             requests:
               storage: ${schema.spec.?storage.?size.orValue("1Gi")}
     - id: deployment
+      includeWhen:
+        - ${schema.spec.?storage.?enabled.orValue(false) == false}
       template:
         apiVersion: apps/v1
         kind: Deployment
@@ -283,26 +286,6 @@ spec:
                       }
                     }]
                   : []
-                }
-              volumes: >-
-                ${
-                  schema.spec.?storage.?enabled.orValue(false)
-                  ? [{
-                      "name": "data",
-                      "persistentVolumeClaim": {
-                        "claimName": persistentVolumeClaim.metadata.name,
-                        "readOnly": false
-                      }
-                    }]
-                  : schema.spec.?config.?env.orValue([])
-                    .filter(envVar, false)
-                    .map(envVar, {
-                      "name": "data",
-                      "persistentVolumeClaim": {
-                        "claimName": "unused",
-                        "readOnly": false
-                      }
-                    })
                 }
               containers:
                 - name: app
@@ -366,22 +349,140 @@ spec:
                         }
                       : {}
                     }
-                  volumeMounts: >-
+                  resources:
+                    requests:
+                      cpu: ${schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m")}
+                      memory: ${schema.spec.?runtime.?resources.?requests.?memory.orValue("128Mi")}
+                    limits:
+                      cpu: ${schema.spec.?runtime.?resources.?limits.?cpu.orValue("500m")}
+                      memory: ${schema.spec.?runtime.?resources.?limits.?memory.orValue("512Mi")}
+    - id: deploymentWithStorage
+      includeWhen:
+        - ${schema.spec.?storage.?enabled.orValue(false)}
+      template:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: ${schema.spec.name}
+          namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+            app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+            app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+            app.kubernetes.io/managed-by: kro
+          annotations: ${schema.spec.?runtime.?deploymentAnnotations.orValue({})}
+        spec:
+          replicas: ${schema.spec.replicas}
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: ${schema.spec.name}
+              app.kubernetes.io/instance: ${schema.metadata.name}
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: ${schema.spec.name}
+                app.kubernetes.io/instance: ${schema.metadata.name}
+                app.kubernetes.io/version: ${schema.spec.?version.orValue("")}
+                app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
+                app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
+                app.kubernetes.io/managed-by: kro
+                platform.connectedcare.io/config-revision: ${schema.spec.?config.?revision.orValue("")}
+              annotations: ${schema.spec.?runtime.?podAnnotations.orValue({})}
+            spec:
+              serviceAccountName: ${schema.spec.?runtime.?serviceAccountName.orValue(serviceAccount.metadata.name)}
+              imagePullSecrets: ${schema.spec.?runtime.?imagePullSecrets.orValue([])}
+              nodeSelector: ${schema.spec.?runtime.?nodeSelector.orValue({})}
+              priorityClassName: ${schema.spec.?runtime.?priorityClassName.orValue("")}
+              tolerations: ${schema.spec.?runtime.?tolerations.orValue([])}
+              topologySpreadConstraints: >-
+                ${
+                  schema.spec.?runtime.?topologySpread.?enabled.orValue(false)
+                  ? [{
+                      "maxSkew": schema.spec.?runtime.?topologySpread.?maxSkew.orValue(1),
+                      "topologyKey": schema.spec.?runtime.?topologySpread.?topologyKey.orValue("kubernetes.io/hostname"),
+                      "whenUnsatisfiable": schema.spec.?runtime.?topologySpread.?whenUnsatisfiable.orValue("ScheduleAnyway"),
+                      "labelSelector": {
+                        "matchLabels": {
+                          "app.kubernetes.io/name": schema.spec.name,
+                          "app.kubernetes.io/instance": schema.metadata.name
+                        }
+                      }
+                    }]
+                  : []
+                }
+              volumes:
+                - name: data
+                  persistentVolumeClaim:
+                    claimName: ${persistentVolumeClaim.metadata.name}
+                    readOnly: false
+              containers:
+                - name: app
+                  image: ${schema.spec.image}
+                  imagePullPolicy: ${schema.spec.?runtime.?imagePullPolicy.orValue("IfNotPresent")}
+                  ports:
+                    - containerPort: ${schema.spec.port}
+                      name: http
+                  env: ${schema.spec.?config.?env.orValue([])}
+                  envFrom: >-
                     ${
-                      schema.spec.?storage.?enabled.orValue(false)
-                      ? [{
-                          "name": "data",
-                          "mountPath": schema.spec.?storage.?mountPath.orValue("/data"),
-                          "readOnly": false
-                        }]
-                      : schema.spec.?config.?env.orValue([])
-                        .filter(envVar, false)
-                        .map(envVar, {
-                          "name": "data",
-                          "mountPath": "/data",
-                          "readOnly": false
-                        })
+                      [{"prefix": "", "configMapRef": {"name": configMap.metadata.name, "optional": false}}]
+                      + schema.spec.?config.?envFromConfigMaps.orValue([]).map(cm, {"prefix": "", "configMapRef": {"name": cm.name, "optional": false}})
+                      + schema.spec.?config.?envFromSecrets.orValue([]).map(secretRef, {"prefix": "", "secretRef": {"name": secretRef.name, "optional": false}})
                     }
+                  readinessProbe: >-
+                    ${
+                      schema.spec.?runtime.?readinessProbe.?enabled.orValue(false)
+                      ? {
+                          "httpGet": {
+                            "path": schema.spec.?runtime.?readinessProbe.?path.orValue("/"),
+                            "port": "http"
+                          },
+                          "initialDelaySeconds": schema.spec.?runtime.?readinessProbe.?initialDelaySeconds.orValue(0),
+                          "periodSeconds": schema.spec.?runtime.?readinessProbe.?periodSeconds.orValue(10),
+                          "timeoutSeconds": schema.spec.?runtime.?readinessProbe.?timeoutSeconds.orValue(1),
+                          "successThreshold": schema.spec.?runtime.?readinessProbe.?successThreshold.orValue(1),
+                          "failureThreshold": schema.spec.?runtime.?readinessProbe.?failureThreshold.orValue(3)
+                        }
+                      : {}
+                    }
+                  livenessProbe: >-
+                    ${
+                      schema.spec.?runtime.?livenessProbe.?enabled.orValue(false)
+                      ? {
+                          "httpGet": {
+                            "path": schema.spec.?runtime.?livenessProbe.?path.orValue("/"),
+                            "port": "http"
+                          },
+                          "initialDelaySeconds": schema.spec.?runtime.?livenessProbe.?initialDelaySeconds.orValue(0),
+                          "periodSeconds": schema.spec.?runtime.?livenessProbe.?periodSeconds.orValue(10),
+                          "timeoutSeconds": schema.spec.?runtime.?livenessProbe.?timeoutSeconds.orValue(1),
+                          "successThreshold": schema.spec.?runtime.?livenessProbe.?successThreshold.orValue(1),
+                          "failureThreshold": schema.spec.?runtime.?livenessProbe.?failureThreshold.orValue(3)
+                        }
+                      : {}
+                    }
+                  securityContext: >-
+                    ${
+                      schema.spec.?runtime.?restrictedSecurity.?enabled.orValue(false)
+                      ? {
+                          "allowPrivilegeEscalation": false,
+                          "capabilities": {
+                            "drop": ["ALL"]
+                          },
+                          "runAsNonRoot": true,
+                          "readOnlyRootFilesystem": schema.spec.?runtime.?restrictedSecurity.?readOnlyRootFilesystem.orValue(false),
+                          "seccompProfile": {
+                            "type": "RuntimeDefault"
+                          }
+                        }
+                      : {}
+                    }
+                  volumeMounts:
+                    - name: data
+                      mountPath: ${schema.spec.?storage.?mountPath.orValue("/data")}
+                      readOnly: false
                   resources:
                     requests:
                       cpu: ${schema.spec.?runtime.?resources.?requests.?cpu.orValue("100m")}
@@ -481,7 +582,7 @@ spec:
           scaleTargetRef:
             apiVersion: apps/v1
             kind: Deployment
-            name: ${deployment.metadata.name}
+            name: ${schema.spec.name}
           minReplicas: ${schema.spec.autoscaling.minReplicas}
           maxReplicas: ${schema.spec.autoscaling.maxReplicas}
           metrics:
