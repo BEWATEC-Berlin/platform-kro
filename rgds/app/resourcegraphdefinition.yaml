@@ -146,6 +146,7 @@ spec:
     status:
       serviceName: ${service.metadata.name}
       serviceType: ${service.spec.type}
+      availableReplicas: ${deployment.status.availableReplicas}
     additionalPrinterColumns:
       - name: Service
         type: string
@@ -153,6 +154,9 @@ spec:
       - name: Type
         type: string
         jsonPath: .status.serviceType
+      - name: Available
+        type: integer
+        jsonPath: .status.availableReplicas
       - name: Age
         type: date
         jsonPath: .metadata.creationTimestamp
