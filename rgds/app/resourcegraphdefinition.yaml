@@ -362,7 +362,8 @@ spec:
                       schema.spec.?storage.?enabled.orValue(false)
                       ? [{
                           "name": "data",
-                          "mountPath": schema.spec.?storage.?mountPath.orValue("/data")
+                          "mountPath": schema.spec.?storage.?mountPath.orValue("/data"),
+                          "readOnly": false
                         }]
                       : []
                     }

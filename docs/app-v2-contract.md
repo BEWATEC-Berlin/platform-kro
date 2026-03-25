@@ -221,7 +221,8 @@ Candidate contents:
 
 - PVC-backed mounts for application data where the workload still fits a
   deployment-shaped API
-- storage class and access mode controls
+- access mode controls and explicit documentation that the first Wave 1 path
+  relies on the cluster default `StorageClass`
 
 This bucket should not be stretched to cover a clearly stateful application
 contract. That is where `StatefulApp` should begin.

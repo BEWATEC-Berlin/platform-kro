@@ -201,11 +201,14 @@ intentionally stays narrow and exposes only `path`, `interval`, and
 `storage` is the current deployment-shaped persistence path. It creates one
 optional `PersistentVolumeClaim` and mounts it into the application container.
 The current contract intentionally stays narrow and exposes only `size`,
-`mountPath`, and one `accessMode`, relying on the cluster default storage class.
+`mountPath`, and one `accessMode`. It does not expose `storageClassName`; the
+created claim relies on the cluster default `StorageClass`.
 
 This is enough for the first Wave 1 PVC case, but it is not yet a general
 volume model. Existing claims, multiple mounts, secret volumes, and empty-dir
-patterns remain outside the current `App` contract.
+patterns remain outside the current `App` contract. The main operational
+failure modes are a cluster with no default `StorageClass` and container images
+that cannot write to the mounted path without extra ownership handling.
 
 `config.revision` is available as an explicit rollout token. It is stamped onto
 the pod template as `platform.connectedcare.io/config-revision`, so overlays can

@@ -17,6 +17,13 @@ Kyverno policy.
 - generated `PersistentVolumeClaim` mounted into the container at `/data`
 - deployment availability in the development cluster without a policy exception
 
+## Operational Notes
+
+This narrow storage example depends on a default `StorageClass` in the cluster.
+It also assumes the image can write to `/data` without extra ownership or
+`fsGroup` handling. Those concerns are still outside the current `App`
+contract.
+
 ## Render Command
 
 ```bash
