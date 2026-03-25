@@ -81,15 +81,20 @@ Wave 1 `App` capabilities already validated live:
 - single-PVC storage with explicit class and mode
 - `HTTPRoute` support in the contract
 
+Wave 1 paper mappings now documented:
+
+- `cc-epg-service`
+- `cc-accounting-middleware`
+
 Wave 1 still needs:
 
 - at least one real `cc-*` service migration spike through GitOps
-- at least one more paper mapping after `cc-epg-service`
-- explicit documentation of what remains outside `App` for those repos
+- explicit documentation of what remains outside `App` for those repos after a live trial
+- a decision on whether `cc-epg-service` or another simpler repo should be the first live spike
 
 ## Recommended Next Order
 
-1. paper-map `cc-epg-service`
-2. paper-map `cc-accounting-middleware`
-3. choose one of them for the first live migration spike
+1. choose the first live Wave 1 migration spike
+2. keep `cc-accounting-middleware` as the design pressure test for volumes and security context
+3. document the outcome of the first live migration spike
 4. only then begin Wave 2 design pressure from PostgreSQL-heavy repos

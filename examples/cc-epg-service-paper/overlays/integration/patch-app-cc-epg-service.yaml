@@ -1,0 +1,32 @@
+apiVersion: platform.connectedcare.io/v1alpha1
+kind: App
+metadata:
+  name: cc-epg-service
+  namespace: cc
+spec:
+  version: integration
+  config:
+    revision: integration-2026-03-25-1
+    data:
+      LOG_LEVEL: debug
+      NODE_ENV: production
+      SERVER_PORT: "8000"
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      AWS_S3_REGION: eu-central-1
+      AWS_S3_BUCKET_NAME: cc-io-sftp
+      CRON_JOB_CACHE_UPDATE: 0 */6 * * *
+      NEW_RELIC_IGNORING_RULES: .*health
+      npm_config_cache: /opt/npm-cache
+      AUTH_ISSUER: https://auth.integration.connectedcare.io/
+      AUTH_JWKS_URI: https://auth.integration.connectedcare.io/.well-known/jwks.json
+      AUTH_AUDIENCE: https://int-epg.bewatec.com
+      AUTH_INHOSPITAL_API_GATEWAY: https://inhospital-api-gateway.integration.bewatec.com
+      NEW_RELIC_APP_NAME: CC EPG Service Integration cc-io
+      NEW_RELIC_ENABLED: "false"
+  route:
+    enabled: true
+    gatewayName: shared-gateway
+    gatewayNamespace: infra-gateway
+    hostnames:
+      - epg.integration.connectedcare.io
+    pathPrefix: /

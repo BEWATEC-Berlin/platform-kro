@@ -45,6 +45,7 @@ Key repo-level documents:
 - `docs/wave-planning.md`: Wave 1 exit criteria and Wave 2 entry criteria
 - `docs/app-contract-cleanup.md`: transitional contract cleanup direction
 - `docs/cc-epg-service-mapping.md`: first paper migration template
+- `docs/cc-accounting-middleware-mapping.md`: second paper migration template
 - `docs/data-service-boundaries.md`: retained backend API decisions
 - `docs/cc-kustomize-gap-analysis.md`: gap analysis against the current
   `cc-*` kustomize repos
@@ -60,6 +61,7 @@ Start here when evaluating or consuming the platform APIs:
 - `docs/app-config-and-secrets.md`: how config and secret projection works
 - `docs/app-migration-cookbook.md`: how to migrate from existing Kustomize
 - `docs/cc-epg-service-mapping.md`: first paper migration example
+- `docs/cc-accounting-middleware-mapping.md`: second paper migration example
 - `docs/app-v2-contract.md`: target `App` contract and validated limitations
 - `docs/wave-planning.md`: migration wave criteria and current status
 - `docs/cc-kustomize-gap-analysis.md`: migration-gap view against the current
@@ -67,6 +69,7 @@ Start here when evaluating or consuming the platform APIs:
 - `examples/otmicro-currency-spike/README.md`: concrete migration spike and
   overlay pattern
 - `examples/restricted-nginx-spike/README.md`: restricted-policy `App` example
+- `examples/cc-epg-service-paper/README.md`: paper `App` example for `cc-epg-service`
 
 ## Change Process
 

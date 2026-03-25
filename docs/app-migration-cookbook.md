@@ -90,16 +90,21 @@ Do not:
 - add raw Kubernetes passthrough fields just to satisfy one repo
 - call a migration successful when large runtime pieces still sit beside `App`
 
-## Current Best Paper Candidate
+## Current Paper Mapping Set
 
-The best current paper migration candidate is `cc-epg-service`.
+Current paper migration mappings:
 
-Why:
+- `cc-epg-service`
+- `cc-accounting-middleware`
 
-- HTTP service
-- one deployment
-- one service
-- overlay-driven config
-- observability and PDB already align with the current `App` surface
+Use them differently:
 
-See `docs/cc-epg-service-mapping.md`.
+- `cc-epg-service` is the best first live migration candidate because most of
+  its runtime contract already fits `App`
+- `cc-accounting-middleware` is the better design pressure test for future
+  work on volumes, security context, and multi-port behavior
+
+See:
+
+- `docs/cc-epg-service-mapping.md`
+- `docs/cc-accounting-middleware-mapping.md`

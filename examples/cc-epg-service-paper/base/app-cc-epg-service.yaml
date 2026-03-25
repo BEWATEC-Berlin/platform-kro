@@ -1,0 +1,89 @@
+apiVersion: platform.connectedcare.io/v1alpha1
+kind: App
+metadata:
+  name: cc-epg-service
+  namespace: cc
+spec:
+  name: cc-epg-service
+  namespace: cc
+  component: api
+  partOf: connectedcare
+  version: integration-placeholder
+  image: UPDATED_BY_CIRCLECI:UPDATED_BY_CIRCLECI
+  port: 8000
+  replicas: 1
+  config:
+    revision: integration-base-1
+    data:
+      LOG_LEVEL: info
+      NODE_ENV: production
+      SERVER_PORT: "8000"
+      PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      AWS_S3_REGION: eu-central-1
+      AWS_S3_BUCKET_NAME: cc-io-sftp
+      CRON_JOB_CACHE_UPDATE: 0 */6 * * *
+      NEW_RELIC_IGNORING_RULES: .*health
+      npm_config_cache: /opt/npm-cache
+    envFromSecrets:
+      - name: cc-epg-service
+      - name: newrelic
+  runtime:
+    imagePullSecrets:
+      - name: regcred
+    imagePullPolicy: IfNotPresent
+    serviceAccountName: default
+    nodeSelector:
+      beta.kubernetes.io/arch: arm64
+    topologySpread:
+      enabled: true
+      topologyKey: topology.kubernetes.io/zone
+      maxSkew: 1
+      whenUnsatisfiable: ScheduleAnyway
+    readinessProbe:
+      enabled: true
+      path: /v1/health
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      failureThreshold: 3
+    livenessProbe:
+      enabled: true
+      path: /v1/health
+      initialDelaySeconds: 0
+      periodSeconds: 10
+      failureThreshold: 3
+    resources:
+      requests:
+        cpu: 10m
+        memory: 100Mi
+      limits:
+        cpu: 512m
+        memory: 512Mi
+  service:
+    type: ClusterIP
+  serviceMonitor:
+    enabled: false
+    path: /metrics
+    interval: 30s
+    scrapeTimeout: 10s
+  disruptionBudget:
+    enabled: false
+    maxUnavailableCount: 1
+  route:
+    enabled: false
+    gatewayName: shared-gateway
+    gatewayNamespace: infra-gateway
+    hostnames: []
+    pathPrefix: /
+  externalSecret:
+    enabled: true
+    secretStoreRefName: cluster-secretstore-sm
+    secretStoreKind: ClusterSecretStore
+    targetSecretName: cc-epg-service
+    refreshInterval: 1h
+    extractKey: sftpgo-readonly
+  certificate:
+    enabled: false
+    issuerName: ''
+    issuerKind: ClusterIssuer
+    secretName: ''
+    dnsNames: []

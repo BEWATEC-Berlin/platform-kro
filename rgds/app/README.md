@@ -21,6 +21,7 @@ User-facing guides for actual usage live in:
 - `docs/app-config-and-secrets.md`
 - `docs/app-migration-cookbook.md`
 - `docs/cc-epg-service-mapping.md`
+- `docs/cc-accounting-middleware-mapping.md`
 - `docs/wave-planning.md`
 
 ## Preferred Shape
