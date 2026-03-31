@@ -77,6 +77,17 @@ Keep these concerns out of scope for the first migration wave:
 The concern-bucket split is an internal contract organization, not a signal to
 create separate top-level APIs such as `AppNetwork` or `AppStorage`.
 
+### `AppDelivery`
+
+- is the delivery-facing companion contract to `App`
+- should own developer-facing CI and promotion intent, not raw Tekton or Kargo
+  resources
+- should stay above mutable environment release state
+- should allow consumer repos to render or reconcile their chosen delivery
+  control-plane implementation without changing the app-facing contract
+- should remain separate from `App` so runtime and delivery concerns do not
+  collapse into one overloaded API
+
 ## Exposure Model
 
 The standard exposure model for HTTP applications is Gateway API
@@ -133,7 +144,9 @@ The intended model is:
    `CacheCluster` where needed
 5. application-facing manifests instantiate `App` objects that bind to those
    backing-service APIs and expose HTTP services through `HTTPRoute`
-6. workloads that do not fit the current retained APIs stay on raw manifests
+6. application-facing manifests may also instantiate `AppDelivery` objects
+   that declare CI and promotion intent for those workloads
+7. workloads that do not fit the current retained APIs stay on raw manifests
    until a coherent platform API exists for them
 
 ## Immediate Next Steps

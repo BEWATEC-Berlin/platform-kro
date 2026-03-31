@@ -1,0 +1,39 @@
+apiVersion: platform.connectedcare.io/v1alpha1
+kind: AppDelivery
+metadata:
+  name: payment-delivery
+  namespace: platform-demo
+spec:
+  name: payment
+  namespace: platform-demo
+  appRef:
+    name: payment
+  repo:
+    provider: github
+    owner: open-telemetry
+    name: opentelemetry-demo
+    defaultBranch: main
+  pipelineClass: node-conventional
+  registry:
+    repository: harbor.example.invalid/astroshop/payment
+    cacheRepository: harbor.example.invalid/astroshop/payment-cache:node-conventional
+  quality:
+    coverageRequired: true
+  publish:
+    branchEnabled: false
+    mainEnabled: true
+    tagEnabled: true
+  build:
+    dockerfile: Dockerfile
+    publishQualitySource: dockerfile
+    importRegistryCache: true
+    exportRegistryCache: false
+  promotion:
+    enabled: true
+    firstStage: mgmt
+  rollout:
+    strategy: canary
+    flaggerEnabled: true
+  requiredSecrets:
+    - github_packages_token
+    - sonar_token

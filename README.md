@@ -13,6 +13,7 @@ The retained core API set is still:
 - `DatabaseCluster`
 - `CacheCluster`
 - `App`
+- `AppDelivery`
 
 Those APIs should now evolve into migration-ready platform contracts rather
 than remain thin wrappers around a single demo slice.
@@ -40,6 +41,7 @@ Key repo-level documents:
 - `docs/architecture.md`: target platform direction and API boundaries
 - `docs/app-v2-contract.md`: concrete `App` v2 contract direction
 - `docs/app-user-guide.md`: user-facing `App` usage guide
+- `docs/app-delivery-contract.md`: concrete `AppDelivery` contract direction
 - `docs/app-config-and-secrets.md`: config, secret, and rollout model
 - `docs/app-migration-cookbook.md`: step-by-step migration approach
 - `docs/wave-planning.md`: Wave 1 exit criteria and Wave 2 entry criteria
@@ -55,9 +57,12 @@ Key repo-level documents:
 Start here when evaluating or consuming the platform APIs:
 
 - `rgds/app/README.md`: user-facing `App` API guide
+- `rgds/appdelivery/README.md`: user-facing `AppDelivery` API guide
 - `rgds/databasecluster/README.md`: user-facing `DatabaseCluster` API guide
 - `rgds/cachecluster/README.md`: user-facing `CacheCluster` API guide
 - `docs/app-user-guide.md`: how to model an HTTP app with `App`
+- `docs/app-delivery-contract.md`: how to model CI and promotion intent with
+  `AppDelivery`
 - `docs/app-config-and-secrets.md`: how config and secret projection works
 - `docs/app-migration-cookbook.md`: how to migrate from existing Kustomize
 - `docs/cc-epg-service-mapping.md`: first paper migration example

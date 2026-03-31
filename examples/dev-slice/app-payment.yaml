@@ -2,6 +2,7 @@ apiVersion: platform.connectedcare.io/v1alpha1
 kind: App
 metadata:
   name: payment
+  namespace: platform-demo
 spec:
   name: payment
   namespace: platform-demo

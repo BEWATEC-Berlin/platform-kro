@@ -4,3 +4,4 @@ resources:
   - databasecluster/resourcegraphdefinition.yaml
   - cachecluster/resourcegraphdefinition.yaml
   - app/resourcegraphdefinition.yaml
+  - appdelivery/resourcegraphdefinition.yaml

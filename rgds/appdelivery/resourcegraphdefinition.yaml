@@ -1,0 +1,93 @@
+apiVersion: kro.run/v1alpha1
+kind: ResourceGraphDefinition
+metadata:
+  name: appdeliveries.platform.connectedcare.io
+spec:
+  schema:
+    apiVersion: v1alpha1
+    group: platform.connectedcare.io
+    kind: AppDelivery
+    types:
+      LocalObjectReference:
+        name: string | required=true
+      RepoRef:
+        provider: string | required=true
+        owner: string | required=true
+        name: string | required=true
+        defaultBranch: string | required=true
+      RegistryConfig:
+        repository: string | required=true
+        cacheRepository: string
+      QualityConfig:
+        coverageRequired: boolean | default=true
+      PublishConfig:
+        branchEnabled: boolean | default=false
+        mainEnabled: boolean | default=true
+        tagEnabled: boolean | default=true
+      BuildConfig:
+        dockerfile: string | default="Dockerfile"
+        dockerfileAsset: string
+        publishQualitySource: string | default="host"
+        importRegistryCache: boolean | default=true
+        exportRegistryCache: boolean | default=true
+      NodeConfig:
+        lintCommand: string
+      PromotionConfig:
+        enabled: boolean | default=false
+        firstStage: string | default="mgmt"
+      RolloutConfig:
+        strategy: string | default="canary"
+        flaggerEnabled: boolean | default=false
+    spec:
+      name: string | required=true
+      namespace: string | required=true
+      appRef: LocalObjectReference
+      repo: RepoRef
+      pipelineClass: string | required=true
+      registry: RegistryConfig
+      quality: QualityConfig
+      publish: PublishConfig
+      build: BuildConfig
+      node: NodeConfig
+      promotion: PromotionConfig
+      rollout: RolloutConfig
+      requiredSecrets: "[]string"
+    status:
+      contractConfigMapName: ${deliveryContract.metadata.name}
+    additionalPrinterColumns:
+      - name: Contract
+        type: string
+        jsonPath: .status.contractConfigMapName
+      - name: Age
+        type: date
+        jsonPath: .metadata.creationTimestamp
+  resources:
+    - id: deliveryContract
+      template:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: ${schema.spec.name}-delivery-contract
+          namespace: ${schema.spec.namespace}
+          labels:
+            app.kubernetes.io/name: ${schema.spec.name}
+            app.kubernetes.io/instance: ${schema.metadata.name}
+            app.kubernetes.io/component: delivery
+            app.kubernetes.io/managed-by: kro
+        data:
+          appName: '${schema.spec.name}'
+          appNamespace: '${schema.spec.namespace}'
+          appRefName: '${schema.spec.?appRef.?name.orValue("")}'
+          pipelineClass: '${schema.spec.pipelineClass}'
+          repoProvider: '${schema.spec.repo.provider}'
+          repoOwner: '${schema.spec.repo.owner}'
+          repoName: '${schema.spec.repo.name}'
+          repoDefaultBranch: '${schema.spec.repo.defaultBranch}'
+          imageRepository: '${schema.spec.registry.repository}'
+          imageCacheRepository: '${schema.spec.?registry.?cacheRepository.orValue("")}'
+          dockerfile: '${schema.spec.build.dockerfile}'
+          dockerfileAsset: '${schema.spec.?build.?dockerfileAsset.orValue("")}'
+          nodeLintCommand: '${schema.spec.?node.?lintCommand.orValue("")}'
+          publishQualitySource: '${schema.spec.build.publishQualitySource}'
+          firstStage: '${schema.spec.promotion.firstStage}'
+          rolloutStrategy: '${schema.spec.rollout.strategy}'
