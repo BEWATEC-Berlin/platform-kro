@@ -34,7 +34,7 @@ spec:
         lintCommand: string
       PromotionConfig:
         enabled: boolean | default=false
-        firstStage: string | default="mgmt"
+        firstStage: string | default="dev"
       RolloutConfig:
         strategy: string | default="canary"
         flaggerEnabled: boolean | default=false

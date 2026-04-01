@@ -15,7 +15,7 @@ The contract is intended to answer:
 - which shared pipeline class applies
 - where is the image published
 - what is the expected cache and publish policy
-- whether promotion starts in `mgmt`
+- which real deployment stage receives the first promoted release
 - what rollout posture is intended downstream
 
 ## Why Separate From `App`

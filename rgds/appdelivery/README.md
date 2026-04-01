@@ -83,7 +83,7 @@ For example, `AppDelivery` records:
 - a Node `lintCommand` when the repo does not expose the conventional entrypoint
 - `publishQualitySource`
 - cache import/export defaults
-- first promotion stage
+- first real deployment stage
 
 It does not expose:
 

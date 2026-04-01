@@ -30,7 +30,7 @@ spec:
     exportRegistryCache: false
   promotion:
     enabled: true
-    firstStage: mgmt
+    firstStage: dev
   rollout:
     strategy: canary
     flaggerEnabled: true
