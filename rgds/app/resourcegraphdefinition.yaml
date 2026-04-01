@@ -248,7 +248,6 @@ spec:
             app.kubernetes.io/component: ${schema.spec.?component.orValue("")}
             app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
             app.kubernetes.io/managed-by: kro
-          annotations: ${schema.spec.?runtime.?deploymentAnnotations.orValue({})}
         spec:
           replicas: ${schema.spec.replicas}
           selector:
@@ -265,41 +264,9 @@ spec:
                 app.kubernetes.io/part-of: ${schema.spec.?partOf.orValue("")}
                 app.kubernetes.io/managed-by: kro
                 platform.connectedcare.io/config-revision: ${schema.spec.?config.?revision.orValue("")}
-              annotations: ${schema.spec.?runtime.?podAnnotations.orValue({})}
             spec:
               serviceAccountName: ${schema.spec.?runtime.?serviceAccountName.orValue(serviceAccount.metadata.name)}
               imagePullSecrets: ${schema.spec.?runtime.?imagePullSecrets.orValue([])}
-              nodeSelector: ${schema.spec.?runtime.?nodeSelector.orValue({})}
-              priorityClassName: ${schema.spec.?runtime.?priorityClassName.orValue("")}
-              tolerations: ${schema.spec.?runtime.?tolerations.orValue([])}
-              topologySpreadConstraints: >-
-                ${
-                  schema.spec.?runtime.?topologySpread.?enabled.orValue(false)
-                  ? [{
-                      "maxSkew": schema.spec.?runtime.?topologySpread.?maxSkew.orValue(1),
-                      "topologyKey": schema.spec.?runtime.?topologySpread.?topologyKey.orValue("kubernetes.io/hostname"),
-                      "whenUnsatisfiable": schema.spec.?runtime.?topologySpread.?whenUnsatisfiable.orValue("ScheduleAnyway"),
-                      "labelSelector": {
-                        "matchLabels": {
-                          "app.kubernetes.io/name": schema.spec.name,
-                          "app.kubernetes.io/instance": schema.metadata.name
-                        }
-                      }
-                    }]
-                  : []
-                }
-              volumes: >-
-                ${
-                  schema.spec.?storage.?enabled.orValue(false)
-                  ? [{
-                      "name": "data",
-                      "persistentVolumeClaim": {
-                        "claimName": persistentVolumeClaim.metadata.name,
-                        "readOnly": false
-                      }
-                    }]
-                  : []
-                }
               containers:
                 - name: app
                   image: ${schema.spec.image}
@@ -308,12 +275,10 @@ spec:
                     - containerPort: ${schema.spec.port}
                       name: http
                   env: ${schema.spec.?config.?env.orValue([])}
-                  envFrom: >-
-                    ${
-                      [{"prefix": "", "configMapRef": {"name": configMap.metadata.name, "optional": false}}]
-                      + schema.spec.?config.?envFromConfigMaps.orValue([]).map(cm, {"prefix": "", "configMapRef": {"name": cm.name, "optional": false}})
-                      + schema.spec.?config.?envFromSecrets.orValue([]).map(secretRef, {"prefix": "", "secretRef": {"name": secretRef.name, "optional": false}})
-                    }
+                  envFrom:
+                    - configMapRef:
+                        name: ${configMap.metadata.name}
+                        optional: false
                   securityContext: >-
                     ${
                       schema.spec.?runtime.?restrictedSecurity.?enabled.orValue(false)
@@ -325,42 +290,6 @@ spec:
                           "seccompProfile": {"type": "RuntimeDefault"}
                         }
                       : {}
-                    }
-                  readinessProbe: >-
-                    ${
-                      schema.spec.?runtime.?readinessProbe.?enabled.orValue(false)
-                      ? {
-                          "httpGet": {"path": schema.spec.?runtime.?readinessProbe.?path.orValue("/"), "port": "http"},
-                          "initialDelaySeconds": schema.spec.?runtime.?readinessProbe.?initialDelaySeconds.orValue(0),
-                          "periodSeconds": schema.spec.?runtime.?readinessProbe.?periodSeconds.orValue(10),
-                          "timeoutSeconds": schema.spec.?runtime.?readinessProbe.?timeoutSeconds.orValue(1),
-                          "successThreshold": schema.spec.?runtime.?readinessProbe.?successThreshold.orValue(1),
-                          "failureThreshold": schema.spec.?runtime.?readinessProbe.?failureThreshold.orValue(3)
-                        }
-                      : {}
-                    }
-                  livenessProbe: >-
-                    ${
-                      schema.spec.?runtime.?livenessProbe.?enabled.orValue(false)
-                      ? {
-                          "httpGet": {"path": schema.spec.?runtime.?livenessProbe.?path.orValue("/"), "port": "http"},
-                          "initialDelaySeconds": schema.spec.?runtime.?livenessProbe.?initialDelaySeconds.orValue(0),
-                          "periodSeconds": schema.spec.?runtime.?livenessProbe.?periodSeconds.orValue(10),
-                          "timeoutSeconds": schema.spec.?runtime.?livenessProbe.?timeoutSeconds.orValue(1),
-                          "successThreshold": schema.spec.?runtime.?livenessProbe.?successThreshold.orValue(1),
-                          "failureThreshold": schema.spec.?runtime.?livenessProbe.?failureThreshold.orValue(3)
-                        }
-                      : {}
-                    }
-                  volumeMounts: >-
-                    ${
-                      schema.spec.?storage.?enabled.orValue(false)
-                      ? [{
-                          "name": "data",
-                          "mountPath": schema.spec.?storage.?mountPath.orValue("/data"),
-                          "readOnly": false
-                        }]
-                      : []
                     }
                   resources:
                     requests:
